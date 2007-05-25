@@ -1,10 +1,10 @@
 --TEST--
-Check for 9p presence
+Check for ixp presence
 --SKIPIF--
-<?php if (!extension_loaded("9p")) print "skip"; ?>
+<?php if (!extension_loaded("ixp")) print "skip"; ?>
 --FILE--
 <?php 
-echo "9p extension is available";
+echo "ixp extension is available";
 /*
 	you can add regression tests for your extension here
 
@@ -18,4 +18,4 @@ echo "9p extension is available";
 */
 ?>
 --EXPECT--
-9p extension is available
+ixp extension is available

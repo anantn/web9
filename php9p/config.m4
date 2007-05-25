@@ -1,11 +1,11 @@
 dnl $Id$
-dnl config.m4 for extension 9p
+dnl config.m4 for extension ixp
 
-PHP_ARG_ENABLE(9p, whether to enable 9p support,
-[  --enable-9p           Enable 9p support])
+PHP_ARG_ENABLE(ixp, whether to enable 9p support,
+[  --enable-ixp           Enable 9p support])
 
-if test "$PHP_9P" != "no"; then
-  AC_DEFINE(HAVE_9P, 1, [Whether you have 9P])
+if test "$PHP_IXP" != "no"; then
+  AC_DEFINE(HAVE_IXP, 1, [Whether you have IXP])
   
   libixp_sources="libixp/src/client.c \
     libixp/src/convert.c libixp/src/intmap.c \
@@ -13,9 +13,9 @@ if test "$PHP_9P" != "no"; then
     libixp/src/server.c libixp/src/socket.c \
     libixp/src/transport.c libixp/src/util.c"
  
-  PHP_9P_CFLAGS="-I@ext_builddir@/libixp -I@ext_builddir@/libixp/src"
+  PHP_IXP_CFLAGS="-I@ext_builddir@/libixp -I@ext_builddir@/libixp/src"
 
-  PHP_NEW_EXTENSION(9p, 9p.c $libixp_sources, $ext_shared,,$PHP_9P_CFLAGS)
+  PHP_NEW_EXTENSION(ixp, ixp.c $libixp_sources, $ext_shared,,$PHP_IXP_CFLAGS)
   PHP_INSTALL_HEADERS([$ext_builddir/libixp/ixp.h])
   PHP_ADD_BUILD_DIR($ext_builddir/libixp/src, 1)
 fi

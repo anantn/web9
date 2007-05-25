@@ -1,10 +1,10 @@
 <?php
 $br = (php_sapi_name() == "cli")? "":"<br>";
 
-if(!extension_loaded('9p')) {
-	dl('9p.' . PHP_SHLIB_SUFFIX);
+if(!extension_loaded('ixp')) {
+	dl('ixp.' . PHP_SHLIB_SUFFIX);
 }
-$module = '9p';
+$module = 'ixp';
 $functions = get_extension_funcs($module);
 echo "Functions available in the test extension:$br\n";
 foreach($functions as $func) {
