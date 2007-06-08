@@ -1,0 +1,364 @@
+<?xml version="1.0" ?>
+<extension name="ixp" version="0.1.0">
+
+	<!-- {{{ Summary and other details -->	
+	<summary>PHP bindings to the 9P protocol</summary>
+	<description>
+		This extension offers you access to interfaces that
+		understand the 9P protocol.
+	</description>
+	<license>LGPL</license>
+	<maintainer>
+		<user>anant</user>
+		<name>Anant Narayanan</name>
+  		<email>anant@php.net</email>
+  		<role>lead</role>
+	</maintainer>
+	<changelog>
+		<release>
+   			<version>0.1</version>
+   			<date>2006-06-10</date>
+   			<state>alpha</state>
+   			<notes>First alpha version</notes>
+  		</release>
+	</changelog>
+	<!-- }}} -->
+
+	<!-- {{{ 9P client interface -->
+	
+	<!-- {{{ class IxpClient -->
+	<class name="IxpClient">
+		<summary>Class representing a 9P Client</summary>
+		
+		<property name="mSize"	 type="int" value="0" />
+		<property name="lastFid" type="int" value="0" />
+		<property name="fd" />
+		<property name="freeFid" />
+		<property name="message" />
+
+		<function name="__construct">
+			<proto>void construct(string path)</proto>
+			<code></code>
+		</function>
+
+		<function name="unmount">
+			<proto>void unmount()</proto>
+			<code></code>
+		</function>
+
+		<function name="create" procedural="no">
+			<proto>object create(string name [, string permissions [, string mode]])</proto>
+			<code></code>
+		</function>
+
+		<function name="open">
+			<proto>object open(string name [, string mode])</proto>
+			<code></code>
+		</function>
+
+		<function name="remove">
+			<proto>int remove(string path)</proto>
+			<code></code>
+		</function>
+
+		<function name="stat">
+			<proto>object stat(string path)</proto>-->
+			<code></code>
+		</function>
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpCFid -->
+	<class name="IxpCFid">
+		<summary>Class representing a client FID</summary>
+
+		<property name="fid"    type="int"  value="0" />
+		<property name="mode"   type="int"  value="0" />
+		<property name="open"   type="int"  value="0" />
+		<property name="iounit" type="int"  value="0" />
+		<property name="offset" type="long" value="0" />
+		<property name="qid" />
+
+		<function name="read">
+			<proto>int read(string buffer [, int count])</proto>
+			<code></code>
+		</function>
+
+		<function name="write">
+			<proto>int write(string buffer)</proto>
+			<code></code>
+		</function>
+
+		<function name="close">
+			<proto>int close()</proto>
+			<code></code>
+		</function>
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpStat -->
+	<class name="IxpStat">
+		<summary>Class representing a Stat resource</summary>
+
+		<property name="type"   type="int" value="0" />
+		<property name="device" type="int" value="0" />
+		<property name="mode"   type="int" value="0" />
+		<property name="aTime"  type="int" value="0" />
+		<property name="mTime"  type="int" value="0" />
+		<property name="length" type="int" value="0" />
+		<property name="name"   type="string" />
+		<property name="uid"	type="string" />
+		<property name="gid"	type="string" />
+		<property name="muid"	type="string" />
+		<property name="qid" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpQid -->
+	<class name="IxpQid">
+		<summary>Class representing a Qid resource</summary>
+
+		<property name="type"	 type="int" value="0" />
+		<property name="version" type="int" value="0" />
+		<property name="path"	 type="string" />
+	</class>
+	<!-- }}} -->
+
+	<!-- }}} -->
+
+	<!-- {{{ 9P server interface -->
+
+	<!-- {{{ class IxpConn -->
+	<class name="IxpConn">
+		<property name="running" />
+		<property name="fd" />
+		<property name="closed" type="int" value="0" />
+		
+		<function name="serve">
+			<proto>void serve(void)</proto>
+		</function>
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpFid -->
+	<class name="IxpFid">
+		<property name="qid" />
+		<property name="uid" type="string" />
+		<property name="fid" type="int"	value="0" />
+		<property name="omode" type="int" value="0" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpRequest -->
+	<class name="IxpRequest">
+		<property name="fid" />
+		<property name="ifcall" />
+		<property name="ofcall" />
+		<property name="newfid" />
+		<property name="oldreq" />
+
+		<function name="respond">
+			<proto>void respond(string error)</proto>
+			<code></code>
+		</function>
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpFcall  -->
+	<class name="IxpFcall">
+		<property name="type"    type="int" value="0" />
+		<property name="tag"     type="int" value="0" />
+		<property name="data" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ interface IxpFcallData -->
+	<interface name="IxpFcallData" />
+	<!-- }}} -->
+
+	<!-- {{{ class Tversion, Rversion -->
+	<class name="IxpFcallDataTVersion"	extends="IxpFcallData">
+		<property name="msize"	 type="int" value="0" />
+		<property name="version" type="string" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Tauth, Rauth -->
+	<class name="IxpFcallDataTauth" 	extends="IxpFcallData">
+		<property name="afid"	 type="int" value="0" />
+		<property name="uname" 	 type="string" />
+		<property name="aname"   type="string" />
+	</class>
+	<class name="IxpFcallDataRauth" 	extends="IxpFcallData">
+		<property name="aqid" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Rerror -->
+	<class name="IxpFcallDataRerror" 	extends="IxpFcallData">
+		<property name="ename"   type="string" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Tflush, Rflush -->
+	<class name="IxpFcallDataTflush" 	extends="IxpFcallData">
+		<property name="oldtag"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRerror" 	extends="IxpFcallData" />
+	<!-- }}} -->
+	
+	<!-- {{{ class Tattach, Rattach -->
+	<class name="IxpFcallDataTattach" 	extends="IxpFcallData">
+		<property name="afid"	 type="int" value="0" />
+		<property name="uname" 	 type="string" />
+		<property name="aname"   type="string" />
+	</class>
+	<class name="IxpFcallDataTattach" 	extends="IxpFcallData">
+		<property name="qid" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Twalk, Rwalk -->
+	<class name="IxpFcallDataTwalk" 	extends="IxpFcallData">
+		<property name="fid"     type="int" value="0" />
+		<property name="newfid"	 type="int" value="0" />
+		<property name="nwname"	 type="int" value="0" />
+		<property name="wname"	 type="string" />
+	</class>
+	<class name="IxpFcallDataRwalk" 	extends="IxpFcallData">
+		<property name="nwqid"	 type="int"	value="0" />
+		<property name="wqid" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Topen, Ropen -->
+	<class name="IxpFcallDataTopen"		extends="IxpFcallData">
+		<property name="fid"     type="int" value="0" />
+		<property name="mode"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRopen"		extends="IxpFcallData">	
+		<property name="qid" />
+		<property name="iounit"  type="int" value="0" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Tcreate, Rcreate -->
+	<class name="IxpFcallDataTcreate"	extends="IxpFcallData">
+		<property name="fid"     type="int" value="0" />
+		<property name="perm"	 type="int" value="0" />
+		<property name="mode"	 type="int" value="0" />
+		<property name="name"	 type="string" />
+	</class>
+	<class name="IxpFcallDataRcreate"	extends="IxpFcallData">
+		<property name="qid" />
+		<property name="iounit"  type="int" value="0" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Tread, Rread -->
+	<class name="IxpFcallDataTread"		extends="IxpFcallData">
+		<property name="fid"     type="int" value="0" />
+		<property name="offset"	 type="int" value="0" />
+		<property name="count"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRread"		extends="IxpFcallData">
+		<property name="count"	 type="int" value="0" />
+		<property name="data"	 type="string" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Twrite, Rwrite -->
+	<class name="IxpFcallDataTwrite"	extends="IxpFcallData">
+		<property name="fid"     type="int" value="0" />
+		<property name="offset"	 type="int" value="0" />
+		<property name="count"	 type="int" value="0" />
+		<property name="data"	 type="string" />
+	</class>
+	<class name="IxpFcallDataRwrite"	extends="IxpFcallData">
+		<property name="count"	 type="int" value="0" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Tclunk, Rclunk -->
+	<class name="IxpFcallDataTclunk"	extends="IxpFcallData">
+		<property name="fid"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRclunk"	extends="IxpFcallData" />
+	<!-- }}} -->
+
+	<!-- {{{ class Tremove, Rremove -->
+	<class name="IxpFcallDataTremove"	extends="IxpFcallData">
+		<property name="fid"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRremove"	extends="IxpFcallData" />
+	<!-- }}} -->
+
+	<!-- {{{ class Tstat, Rstat -->
+	<class name="IxpFcallDataTstat"		extends="IxpFcallData">
+		<property name="fid"	 type="int" value="0" />
+	</class>
+	<class name="IxpFcallDataRstat"		extends="IxpFcallData">
+		<property name="nstat"	 type="int" value="0" />
+		<property name="stat"	 type="string" />
+	</class>
+	<!-- }}} -->
+
+	<!-- {{{ class Twstat, Rwstat -->
+	<class name="IxpFcallDataTwstat"	extends="IxpFcallData">
+		<property name="nstat"	 type="int" value="0" />
+		<property name="stat"	 type="string" />
+	</class>
+	<class name="IxpFcallDataRwstat"	extends="IxpFcallData" />
+	<!-- }}} -->
+
+	<!-- {{{ interface IxpCallbacks -->
+	<interface name="IxpCallbacks">
+		<function name="attach"><proto>void attach(object IxpRequest)</proto></function>
+		<function name="clunk"><proto>void clunk(object IxpRequest)</proto></function>
+		<function name="create"><proto>void create(object IxpRequest)</proto></function>
+		<function name="flush"><proto>void flush(object IxpRequest)</proto></function>
+		<function name="open"><proto>void open(object IxpRequest)</proto></function>
+		<function name="read"><proto>void read(object IxpRequest)</proto></function>
+		<function name="remove"><proto>void remove(object IxpRequest)</proto></function>
+		<function name="stat"><proto>void stat(object IxpRequest)</proto></function>
+		<function name="walk"><proto>void walk(object IxpRequest)</proto></function>
+		<function name="write"><proto>void write(object IxpRequest)</proto></function>
+		<function name="freefid"><proto>void attach(object IxpFid)</proto></function>
+	</interface>
+	<!-- }}} -->
+
+	<!-- {{{ interface IxpServerCallbacks -->
+	<interface name="IxpServerCallbacks">
+		<function name="read"><proto>void read(object IxpConn)</proto></function>
+		<function name="close"><proto>void close(object IxpConn)</proto></function>
+	</interface>
+	<!-- }}} -->
+
+	<!-- {{{ class IxpServer -->
+	<class name="IxpServer">
+		<function name="__construct">
+			<proto>void construct(string address, object IxpCallbacks[, object IxpServerCallbacks])</proto>
+			<code></code>
+		</function>	
+		<function name="start">
+			<proto>void start(void)</proto>
+			<code></code>
+		</function>
+		<function name="stop">
+			<proto>void stop(void)</proto>
+			<code></code>
+		</function>
+	</class>	
+	<!-- }}} -->
+
+	<!-- }}} -->
+
+</extension>
+
+<!--
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+-->
