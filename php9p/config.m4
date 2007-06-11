@@ -16,6 +16,6 @@ if test "$PHP_IXP" != "no"; then
   PHP_IXP_CFLAGS="-I@ext_builddir@/libixp -I@ext_builddir@/libixp/src"
 
   PHP_NEW_EXTENSION(ixp, ixp.c $libixp_sources, $ext_shared,,$PHP_IXP_CFLAGS)
-  PHP_INSTALL_HEADERS([$ext_builddir/libixp/ixp.h])
+  dnl PHP_INSTALL_HEADERS([$ext_builddir/libixp/ixp.h])
   PHP_ADD_BUILD_DIR($ext_builddir/libixp/src, 1)
 fi

@@ -1,25 +1,54 @@
 /*
-  +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
-  +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2007 The PHP Group                                |
-  +----------------------------------------------------------------------+
-  | This source file is subject to version 3.01 of the PHP license,      |
-  | that is bundled with this package in the file LICENSE, and is        |
-  | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_01.txt                                  |
-  | If you did not receive a copy of the PHP license and are unable to   |
-  | obtain it through the world-wide-web, please send a note to          |
-  | license@php.net so we can mail you a copy immediately.               |
-  +----------------------------------------------------------------------+
-  | Author:                                                              |
-  +----------------------------------------------------------------------+
+   +----------------------------------------------------------------------+
+   | This library is free software; you can redistribute it and/or        |
+   | modify it under the terms of the GNU Lesser General Public           |
+   | License as published by the Free Software Foundation; either         |
+   | version 2.1 of the License, or (at your option) any later version.   | 
+   |                                                                      |
+   | This library is distributed in the hope that it will be useful,      |
+   | but WITHOUT ANY WARRANTY; without even the implied warranty of       |
+   | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    |
+   | Lesser General Public License for more details.                      | 
+   |                                                                      |
+   | You should have received a copy of the GNU Lesser General Public     |
+   | License in the file LICENSE along with this library;                 |
+   | if not, write to the                                                 | 
+   |                                                                      |
+   |   Free Software Foundation, Inc.,                                    |
+   |   59 Temple Place, Suite 330,                                        |
+   |   Boston, MA  02111-1307  USA                                        |
+   +----------------------------------------------------------------------+
+   | Authors: Anant Narayanan <anant@php.net>                             |
+   +----------------------------------------------------------------------+
 */
 
-/* $Id: header,v 1.16.2.1.2.1 2007/01/01 19:32:09 iliaa Exp $ */
+/* $ Id: $ */ 
 
 #ifndef PHP_IXP_H
 #define PHP_IXP_H
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <php.h>
+
+#ifdef HAVE_IXP
+
+#include <php_ini.h>
+#include <SAPI.h>
+#include <ext/standard/info.h>
+#include <Zend/zend_extensions.h>
+#ifdef  __cplusplus
+} // extern "C" 
+#endif
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
 extern zend_module_entry ixp_module_entry;
 #define phpext_ixp_ptr &ixp_module_entry
@@ -30,45 +59,131 @@ extern zend_module_entry ixp_module_entry;
 #define PHP_IXP_API
 #endif
 
-#ifdef ZTS
-#include "TSRM.h"
-#endif
-
 PHP_MINIT_FUNCTION(ixp);
 PHP_MSHUTDOWN_FUNCTION(ixp);
 PHP_RINIT_FUNCTION(ixp);
 PHP_RSHUTDOWN_FUNCTION(ixp);
 PHP_MINFO_FUNCTION(ixp);
 
-PHP_FUNCTION(confirm_ixp_compiled);	/* For testing, remove later. */
-
-/* 
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:     
-
-ZEND_BEGIN_MODULE_GLOBALS(ixp)
-	long  global_value;
-	char *global_string;
-ZEND_END_MODULE_GLOBALS(ixp)
-*/
-
-/* In every utility function you add that needs to use variables 
-   in php_ixp_globals, call TSRMLS_FETCH(); after declaring other 
-   variables used by that function, or better yet, pass in TSRMLS_CC
-   after the last function argument and declare your utility function
-   with TSRMLS_DC after the last declared argument.  Always refer to
-   the globals in your function as IXP_G(variable).  You are 
-   encouraged to rename these macros something shorter, see
-   examples in any other php module directory.
-*/
-
 #ifdef ZTS
-#define IXP_G(v) TSRMG(ixp_globals_id, zend_ixp_globals *, v)
-#else
-#define IXP_G(v) (ixp_globals.v)
+#include "TSRM.h"
 #endif
 
-#endif	/* PHP_IXP_H */
+#define FREE_RESOURCE(resource) zend_list_delete(Z_LVAL_P(resource))
+
+#define PROP_GET_LONG(name)    Z_LVAL_P(zend_read_property(_this_ce, _this_zval, #name, strlen(#name), 1 TSRMLS_CC))
+#define PROP_SET_LONG(name, l) zend_update_property_long(_this_ce, _this_zval, #name, strlen(#name), l TSRMLS_CC)
+
+#define PROP_GET_DOUBLE(name)    Z_DVAL_P(zend_read_property(_this_ce, _this_zval, #name, strlen(#name), 1 TSRMLS_CC))
+#define PROP_SET_DOUBLE(name, d) zend_update_property_double(_this_ce, _this_zval, #name, strlen(#name), d TSRMLS_CC)
+
+#define PROP_GET_STRING(name)    Z_STRVAL_P(zend_read_property(_this_ce, _this_zval, #name, strlen(#name), 1 TSRMLS_CC))
+#define PROP_GET_STRLEN(name)    Z_STRLEN_P(zend_read_property(_this_ce, _this_zval, #name, strlen(#name), 1 TSRMLS_CC))
+#define PROP_SET_STRING(name, s) zend_update_property_string(_this_ce, _this_zval, #name, strlen(#name), s TSRMLS_CC)
+#define PROP_SET_STRINGL(name, s, l) zend_update_property_string(_this_ce, _this_zval, #name, strlen(#name), s, l TSRMLS_CC)
+
+
+PHP_METHOD(IxpClient, __construct);
+ZEND_BEGIN_ARG_INFO(IxpClient____construct_args, 0)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpClient, unmount);
+ZEND_BEGIN_ARG_INFO(IxpClient__unmount_args, 0)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpClient, create);
+ZEND_BEGIN_ARG_INFO(IxpClient__create_args, 0)
+  ZEND_ARG_INFO(0, name)
+  ZEND_ARG_INFO(0, permissions)
+  ZEND_ARG_INFO(0, mode)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpClient, open);
+ZEND_BEGIN_ARG_INFO(IxpClient__open_args, 0)
+  ZEND_ARG_INFO(0, name)
+  ZEND_ARG_INFO(0, mode)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpClient, remove);
+ZEND_BEGIN_ARG_INFO(IxpClient__remove_args, 0)
+  ZEND_ARG_INFO(0, path)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpClient, stat);
+ZEND_BEGIN_ARG_INFO(IxpClient__stat_args, 0)
+  ZEND_ARG_INFO(0, path)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpCFid, read);
+ZEND_BEGIN_ARG_INFO(IxpCFid__read_args, 0)
+  ZEND_ARG_INFO(0, buffer)
+  ZEND_ARG_INFO(0, count)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpCFid, write);
+ZEND_BEGIN_ARG_INFO(IxpCFid__write_args, 0)
+  ZEND_ARG_INFO(0, buffer)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpCFid, close);
+ZEND_BEGIN_ARG_INFO(IxpCFid__close_args, 0)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpConn, serve);
+ZEND_BEGIN_ARG_INFO(IxpConn__serve_args, 0)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpRequest, respond);
+ZEND_BEGIN_ARG_INFO(IxpRequest__respond_args, 0)
+  ZEND_ARG_INFO(0, error)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpServer, __construct);
+ZEND_BEGIN_ARG_INFO(IxpServer____construct_args, 0)
+  ZEND_ARG_INFO(0, IxpCallbacks)
+  ZEND_ARG_INFO(0, IxpServerCallbacks)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpServer, start);
+ZEND_BEGIN_ARG_INFO(IxpServer__start_args, 0)
+ZEND_END_ARG_INFO()
+PHP_METHOD(IxpServer, stop);
+ZEND_BEGIN_ARG_INFO(IxpServer__stop_args, 0)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__attach_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__clunk_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__create_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__flush_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__open_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__read_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__remove_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__stat_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__walk_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__write_args, 0)
+  ZEND_ARG_INFO(0, IxpRequest)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpCallbacks__freefid_args, 0)
+  ZEND_ARG_INFO(0, IxpFid)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpServerCallbacks__read_args, 0)
+  ZEND_ARG_INFO(0, IxpConn)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(IxpServerCallbacks__close_args, 0)
+  ZEND_ARG_INFO(0, IxpConn)
+ZEND_END_ARG_INFO()
+#ifdef  __cplusplus
+} // extern "C" 
+#endif
+
+#endif /* PHP_HAVE_IXP */
+
+#endif /* PHP_IXP_H */
 
 
 /*
