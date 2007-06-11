@@ -25,28 +25,11 @@
 /* $ Id: $ */ 
 
 #include "php_ixp.h"
+#include "ixp.h"
 
 #if HAVE_IXP
 
 /* {{{ Interface definitions */
-
-/* {{{ Interface IxpFcallData */
-
-static zend_class_entry * IxpFcallData_ce_ptr = NULL;
-
-static zend_function_entry IxpFcallData_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-static void interface_init_IxpFcallData(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallData", IxpFcallData_methods);
-	IxpFcallData_ce_ptr = zend_register_internal_interface(&ce TSRMLS_CC);
-}
-
-/* }}} Class IxpFcallData */
 
 /* {{{ Interface IxpCallbacks */
 
@@ -729,8 +712,100 @@ static void class_init_IxpFcall(void)
 		"tag", 3, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"fid", 3, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"msize", 5, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"version", 7, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"oldtag", 6, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"ename", 5, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
 	zend_declare_property_null(IxpFcall_ce_ptr, 
-		"data", 4, 
+		"qid", 3, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"iounit", 6, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_null(IxpFcall_ce_ptr, 
+		"aqid", 4, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"afid", 4, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"uname", 5, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"aname", 5, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"perm", 4, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"name", 4, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"mode", 4, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"newfid", 6, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"nwname", 6, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"wname", 5, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"nwqid", 5, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_null(IxpFcall_ce_ptr, 
+		"wqid", 4, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"offset", 6, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"count", 5, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"data", 4, "", 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_long(IxpFcall_ce_ptr, 
+		"nstat", 5, 0, 
+		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_property_string(IxpFcall_ce_ptr, 
+		"stat", 4, "", 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 
 	/* }}} Property registration */
@@ -738,815 +813,6 @@ static void class_init_IxpFcall(void)
 }
 
 /* }}} Class IxpFcall */
-
-/* {{{ Class IxpFcallDataTVersion */
-
-static zend_class_entry * IxpFcallDataTVersion_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTVersion_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTVersion(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTVersion", IxpFcallDataTVersion_methods);
-	IxpFcallDataTVersion_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTVersion_ce_ptr, 
-		"msize", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTVersion_ce_ptr, 
-		"version", 7, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTVersion */
-
-/* {{{ Class IxpFcallDataTauth */
-
-static zend_class_entry * IxpFcallDataTauth_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTauth_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTauth(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTauth", IxpFcallDataTauth_methods);
-	IxpFcallDataTauth_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTauth_ce_ptr, 
-		"afid", 4, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTauth_ce_ptr, 
-		"uname", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTauth_ce_ptr, 
-		"aname", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTauth */
-
-/* {{{ Class IxpFcallDataRauth */
-
-static zend_class_entry * IxpFcallDataRauth_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRauth_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRauth(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRauth", IxpFcallDataRauth_methods);
-	IxpFcallDataRauth_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_null(IxpFcallDataRauth_ce_ptr, 
-		"aqid", 4, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRauth */
-
-/* {{{ Class IxpFcallDataRerror */
-
-static zend_class_entry * IxpFcallDataRerror_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRerror_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRerror(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRerror", IxpFcallDataRerror_methods);
-	IxpFcallDataRerror_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_string(IxpFcallDataRerror_ce_ptr, 
-		"ename", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRerror */
-
-/* {{{ Class IxpFcallDataTflush */
-
-static zend_class_entry * IxpFcallDataTflush_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTflush_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTflush(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTflush", IxpFcallDataTflush_methods);
-	IxpFcallDataTflush_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTflush_ce_ptr, 
-		"oldtag", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTflush */
-
-/* {{{ Class IxpFcallDataTattach */
-
-static zend_class_entry * IxpFcallDataTattach_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTattach_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTattach(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTattach", IxpFcallDataTattach_methods);
-	IxpFcallDataTattach_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTattach_ce_ptr, 
-		"afid", 4, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTattach_ce_ptr, 
-		"uname", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTattach_ce_ptr, 
-		"aname", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTattach */
-
-/* {{{ Class IxpFcallDataTwalk */
-
-static zend_class_entry * IxpFcallDataTwalk_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTwalk_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTwalk(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTwalk", IxpFcallDataTwalk_methods);
-	IxpFcallDataTwalk_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTwalk_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTwalk_ce_ptr, 
-		"newfid", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTwalk_ce_ptr, 
-		"nwname", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTwalk_ce_ptr, 
-		"wname", 5, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTwalk */
-
-/* {{{ Class IxpFcallDataRwalk */
-
-static zend_class_entry * IxpFcallDataRwalk_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRwalk_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRwalk(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRwalk", IxpFcallDataRwalk_methods);
-	IxpFcallDataRwalk_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataRwalk_ce_ptr, 
-		"nwqid", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpFcallDataRwalk_ce_ptr, 
-		"wqid", 4, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRwalk */
-
-/* {{{ Class IxpFcallDataTopen */
-
-static zend_class_entry * IxpFcallDataTopen_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTopen_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTopen(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTopen", IxpFcallDataTopen_methods);
-	IxpFcallDataTopen_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTopen_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTopen_ce_ptr, 
-		"mode", 4, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTopen */
-
-/* {{{ Class IxpFcallDataRopen */
-
-static zend_class_entry * IxpFcallDataRopen_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRopen_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRopen(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRopen", IxpFcallDataRopen_methods);
-	IxpFcallDataRopen_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_null(IxpFcallDataRopen_ce_ptr, 
-		"qid", 3, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataRopen_ce_ptr, 
-		"iounit", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRopen */
-
-/* {{{ Class IxpFcallDataTcreate */
-
-static zend_class_entry * IxpFcallDataTcreate_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTcreate_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTcreate(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTcreate", IxpFcallDataTcreate_methods);
-	IxpFcallDataTcreate_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTcreate_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTcreate_ce_ptr, 
-		"perm", 4, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTcreate_ce_ptr, 
-		"mode", 4, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTcreate_ce_ptr, 
-		"name", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTcreate */
-
-/* {{{ Class IxpFcallDataRcreate */
-
-static zend_class_entry * IxpFcallDataRcreate_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRcreate_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRcreate(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRcreate", IxpFcallDataRcreate_methods);
-	IxpFcallDataRcreate_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_null(IxpFcallDataRcreate_ce_ptr, 
-		"qid", 3, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataRcreate_ce_ptr, 
-		"iounit", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRcreate */
-
-/* {{{ Class IxpFcallDataTread */
-
-static zend_class_entry * IxpFcallDataTread_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTread_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTread(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTread", IxpFcallDataTread_methods);
-	IxpFcallDataTread_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTread_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTread_ce_ptr, 
-		"offset", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTread_ce_ptr, 
-		"count", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTread */
-
-/* {{{ Class IxpFcallDataRread */
-
-static zend_class_entry * IxpFcallDataRread_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRread_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRread(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRread", IxpFcallDataRread_methods);
-	IxpFcallDataRread_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataRread_ce_ptr, 
-		"count", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataRread_ce_ptr, 
-		"data", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRread */
-
-/* {{{ Class IxpFcallDataTwrite */
-
-static zend_class_entry * IxpFcallDataTwrite_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTwrite_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTwrite(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTwrite", IxpFcallDataTwrite_methods);
-	IxpFcallDataTwrite_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTwrite_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTwrite_ce_ptr, 
-		"offset", 6, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpFcallDataTwrite_ce_ptr, 
-		"count", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTwrite_ce_ptr, 
-		"data", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTwrite */
-
-/* {{{ Class IxpFcallDataRwrite */
-
-static zend_class_entry * IxpFcallDataRwrite_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRwrite_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRwrite(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRwrite", IxpFcallDataRwrite_methods);
-	IxpFcallDataRwrite_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataRwrite_ce_ptr, 
-		"count", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRwrite */
-
-/* {{{ Class IxpFcallDataTclunk */
-
-static zend_class_entry * IxpFcallDataTclunk_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTclunk_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTclunk(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTclunk", IxpFcallDataTclunk_methods);
-	IxpFcallDataTclunk_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTclunk_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTclunk */
-
-/* {{{ Class IxpFcallDataRclunk */
-
-static zend_class_entry * IxpFcallDataRclunk_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRclunk_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRclunk(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRclunk", IxpFcallDataRclunk_methods);
-	IxpFcallDataRclunk_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-}
-
-/* }}} Class IxpFcallDataRclunk */
-
-/* {{{ Class IxpFcallDataTremove */
-
-static zend_class_entry * IxpFcallDataTremove_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTremove_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTremove(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTremove", IxpFcallDataTremove_methods);
-	IxpFcallDataTremove_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTremove_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTremove */
-
-/* {{{ Class IxpFcallDataRremove */
-
-static zend_class_entry * IxpFcallDataRremove_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRremove_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRremove(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRremove", IxpFcallDataRremove_methods);
-	IxpFcallDataRremove_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-}
-
-/* }}} Class IxpFcallDataRremove */
-
-/* {{{ Class IxpFcallDataTstat */
-
-static zend_class_entry * IxpFcallDataTstat_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTstat_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTstat(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTstat", IxpFcallDataTstat_methods);
-	IxpFcallDataTstat_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTstat_ce_ptr, 
-		"fid", 3, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTstat */
-
-/* {{{ Class IxpFcallDataRstat */
-
-static zend_class_entry * IxpFcallDataRstat_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRstat_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRstat(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRstat", IxpFcallDataRstat_methods);
-	IxpFcallDataRstat_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataRstat_ce_ptr, 
-		"nstat", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataRstat_ce_ptr, 
-		"stat", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataRstat */
-
-/* {{{ Class IxpFcallDataTwstat */
-
-static zend_class_entry * IxpFcallDataTwstat_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataTwstat_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataTwstat(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataTwstat", IxpFcallDataTwstat_methods);
-	IxpFcallDataTwstat_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpFcallDataTwstat_ce_ptr, 
-		"nstat", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_string(IxpFcallDataTwstat_ce_ptr, 
-		"stat", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
-}
-
-/* }}} Class IxpFcallDataTwstat */
-
-/* {{{ Class IxpFcallDataRwstat */
-
-static zend_class_entry * IxpFcallDataRwstat_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-static zend_function_entry IxpFcallDataRwstat_methods[] = {
-	{ NULL, NULL, NULL }
-};
-
-/* }}} Methods */
-
-static void class_init_IxpFcallDataRwstat(void)
-{
-	zend_class_entry ce;
-
-	INIT_CLASS_ENTRY(ce, "IxpFcallDataRwstat", IxpFcallDataRwstat_methods);
-	IxpFcallDataRwstat_ce_ptr = zend_register_internal_class_ex(&ce, NULL, "IxpFcallData" TSRMLS_CC);
-}
-
-/* }}} Class IxpFcallDataRwstat */
 
 /* {{{ Class IxpServer */
 
@@ -1680,32 +946,7 @@ PHP_MINIT_FUNCTION(ixp)
 	class_init_IxpFid();
 	class_init_IxpRequest();
 	class_init_IxpFcall();
-	class_init_IxpFcallDataTVersion();
-	class_init_IxpFcallDataTauth();
-	class_init_IxpFcallDataRauth();
-	class_init_IxpFcallDataRerror();
-	class_init_IxpFcallDataTflush();
-	class_init_IxpFcallDataTattach();
-	class_init_IxpFcallDataTwalk();
-	class_init_IxpFcallDataRwalk();
-	class_init_IxpFcallDataTopen();
-	class_init_IxpFcallDataRopen();
-	class_init_IxpFcallDataTcreate();
-	class_init_IxpFcallDataRcreate();
-	class_init_IxpFcallDataTread();
-	class_init_IxpFcallDataRread();
-	class_init_IxpFcallDataTwrite();
-	class_init_IxpFcallDataRwrite();
-	class_init_IxpFcallDataTclunk();
-	class_init_IxpFcallDataRclunk();
-	class_init_IxpFcallDataTremove();
-	class_init_IxpFcallDataRremove();
-	class_init_IxpFcallDataTstat();
-	class_init_IxpFcallDataRstat();
-	class_init_IxpFcallDataTwstat();
-	class_init_IxpFcallDataRwstat();
 	class_init_IxpServer();
-	interface_init_IxpFcallData();
 	interface_init_IxpCallbacks();
 	interface_init_IxpServerCallbacks();
 

@@ -151,117 +151,43 @@
 	<class name="IxpFcall">
 		<property name="type"    type="int" value="0" />
 		<property name="tag"     type="int" value="0" />
-		<property name="data" />
-	</class>
+		<property name="fid"     type="int" value="0" />
 
-	<class name="IxpFcallData" />
-	
-	<class name="IxpFcallDataTVersion"	extends="IxpFcallData">
 		<property name="msize"	 type="int" value="0" />
 		<property name="version" type="string" />
-	</class>
 
-	<class name="IxpFcallDataTauth" 	extends="IxpFcallData">
-		<property name="afid"	 type="int" value="0" />
-		<property name="uname" 	 type="string" />
-		<property name="aname"   type="string" />
-	</class>
-	<class name="IxpFcallDataRauth" 	extends="IxpFcallData">
-		<property name="aqid" />
-	</class>
-
-	<class name="IxpFcallDataRerror" 	extends="IxpFcallData">
-		<property name="ename"   type="string" />
-	</class>
-
-	<class name="IxpFcallDataTflush" 	extends="IxpFcallData">
 		<property name="oldtag"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRerror" 	extends="IxpFcallData" />
-	
-	<class name="IxpFcallDataTattach" 	extends="IxpFcallData">
+
+		<property name="ename"   type="string" />
+
+		<property name="qid" />
+		<property name="iounit"  type="int" value="0" />
+
+		<property name="aqid" />
+
 		<property name="afid"	 type="int" value="0" />
 		<property name="uname" 	 type="string" />
 		<property name="aname"   type="string" />
-	</class>
-	<class name="IxpFcallDataTattach" 	extends="IxpFcallData">
-		<property name="qid" />
-	</class>
+		
+		<property name="perm"	 type="int" value="0" />
+		<property name="name"	 type="string" />
+		<property name="mode"	 type="int" value="0" />
 
-	<class name="IxpFcallDataTwalk" 	extends="IxpFcallData">
-		<property name="fid"     type="int" value="0" />
 		<property name="newfid"	 type="int" value="0" />
 		<property name="nwname"	 type="int" value="0" />
 		<property name="wname"	 type="string" />
-	</class>
-	<class name="IxpFcallDataRwalk" 	extends="IxpFcallData">
+
 		<property name="nwqid"	 type="int"	value="0" />
 		<property name="wqid" />
-	</class>
-
-	<class name="IxpFcallDataTopen"		extends="IxpFcallData">
-		<property name="fid"     type="int" value="0" />
-		<property name="mode"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRopen"		extends="IxpFcallData">	
-		<property name="qid" />
-		<property name="iounit"  type="int" value="0" />
-	</class>
-
-	<class name="IxpFcallDataTcreate"	extends="IxpFcallData">
-		<property name="fid"     type="int" value="0" />
-		<property name="perm"	 type="int" value="0" />
-		<property name="mode"	 type="int" value="0" />
-		<property name="name"	 type="string" />
-	</class>
-	<class name="IxpFcallDataRcreate"	extends="IxpFcallData">
-		<property name="qid" />
-		<property name="iounit"  type="int" value="0" />
-	</class>
-
-	<class name="IxpFcallDataTread"		extends="IxpFcallData">
-		<property name="fid"     type="int" value="0" />
+		
 		<property name="offset"	 type="int" value="0" />
-		<property name="count"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRread"		extends="IxpFcallData">
+
 		<property name="count"	 type="int" value="0" />
 		<property name="data"	 type="string" />
-	</class>
-
-	<class name="IxpFcallDataTwrite"	extends="IxpFcallData">
-		<property name="fid"     type="int" value="0" />
-		<property name="offset"	 type="int" value="0" />
-		<property name="count"	 type="int" value="0" />
-		<property name="data"	 type="string" />
-	</class>
-	<class name="IxpFcallDataRwrite"	extends="IxpFcallData">
-		<property name="count"	 type="int" value="0" />
-	</class>
-
-	<class name="IxpFcallDataTclunk"	extends="IxpFcallData">
-		<property name="fid"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRclunk"	extends="IxpFcallData" />
-
-	<class name="IxpFcallDataTremove"	extends="IxpFcallData">
-		<property name="fid"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRremove"	extends="IxpFcallData" />
-
-	<class name="IxpFcallDataTstat"		extends="IxpFcallData">
-		<property name="fid"	 type="int" value="0" />
-	</class>
-	<class name="IxpFcallDataRstat"		extends="IxpFcallData">
+		
 		<property name="nstat"	 type="int" value="0" />
 		<property name="stat"	 type="string" />
 	</class>
-
-	<class name="IxpFcallDataTwstat"	extends="IxpFcallData">
-		<property name="nstat"	 type="int" value="0" />
-		<property name="stat"	 type="string" />
-	</class>
-	<class name="IxpFcallDataRwstat"	extends="IxpFcallData" />
 	
 	<interface name="IxpCallbacks">
 		<function name="attach"><proto>void attach(object IxpRequest)</proto></function>
