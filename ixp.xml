@@ -154,7 +154,7 @@
 		<property name="data" />
 	</class>
 
-	<interface name="IxpFcallData" />
+	<class name="IxpFcallData" />
 	
 	<class name="IxpFcallDataTVersion"	extends="IxpFcallData">
 		<property name="msize"	 type="int" value="0" />
