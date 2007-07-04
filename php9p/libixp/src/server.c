@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "ixp.h"
+#include "ixp_local.h"
 
 IxpConn *
 ixp_listen(IxpServer *s, int fd, void *aux,
@@ -15,7 +15,7 @@ ixp_listen(IxpServer *s, int fd, void *aux,
 		) {
 	IxpConn *c;
 
-	c = ixp_emallocz(sizeof(IxpConn));
+	c = emallocz(sizeof(IxpConn));
 	c->fd = fd;
 	c->aux = aux;
 	c->srv = s;
@@ -52,12 +52,12 @@ prepare_select(IxpServer *s) {
 	IxpConn *c;
 
 	FD_ZERO(&s->rd);
-	for(c = s->conn; c; c = c->next) {
-		if(s->maxfd < c->fd)
-			s->maxfd = c->fd;
-		if(c->read)
+	for(c = s->conn; c; c = c->next)
+		if(c->read) {
+			if(s->maxfd < c->fd)
+				s->maxfd = c->fd;
 			FD_SET(c->fd, &s->rd);
-	}
+		}
 }
 
 static void
@@ -70,22 +70,24 @@ handle_conns(IxpServer *s) {
 	}
 }
 
-char *
+int
 ixp_serverloop(IxpServer *s) {
 	int r;
 
 	s->running = 1;
 	while(s->running) {
+		if(s->preselect)
+			s->preselect(s);
 		prepare_select(s);
-		r = select(s->maxfd + 1, &s->rd, 0, 0, 0);
+		r = thread->select(s->maxfd + 1, &s->rd, 0, 0, 0);
 		if(r < 0) {
 			if(errno == EINTR)
 				continue;
-			return "fatal select error";
+			return 1;
 		}
 		handle_conns(s);
 	}
-	return nil;
+	return 0;
 }
 
 void
