@@ -110,7 +110,6 @@ ZEND_END_ARG_INFO()
 /* IxpCFid */
 PHP_METHOD(IxpCFid, read);
 ZEND_BEGIN_ARG_INFO(IxpCFid__read_args, 0)
-  ZEND_ARG_INFO(0, buffer)
   ZEND_ARG_INFO(0, count)
 ZEND_END_ARG_INFO()
 
