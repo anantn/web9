@@ -57,6 +57,23 @@ PHP_MINIT_FUNCTION(ixp)
 	interface_init_IxpCallbacks();
 	interface_init_IxpServerCallbacks();
 
+	REGISTER_STRING_CONSTANT("IXP_VERSION", IXP_VERSION, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_NOTAG", IXP_NOTAG, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_NOFID", IXP_NOFID, CONST_CS | CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("IXP_OREAD", P9_OREAD, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OWRITE", P9_OWRITE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_ORDWR", P9_ORDWR, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OEXEC", P9_OEXEC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OTRUNC", P9_OTRUNC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OCEXEC", P9_OCEXEC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_ORCLOSE", P9_ORCLOSE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_ODIRECT", P9_ODIRECT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_ONONBLOCK", P9_ONONBLOCK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OEXCL", P9_OEXCL, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OLOCK", P9_OLOCK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_OAPPEND", P9_OREAD, CONST_CS | CONST_PERSISTENT);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -255,33 +272,37 @@ PHP_METHOD(IxpClient, create)
 	}
 
 	_this_ce = Z_OBJCE_P(_this_zval);
-	PHP_IxpClient *client = FETCH_IxpClient(_this_zval);
 
+	PHP_IxpClient *client = FETCH_IxpClient(_this_zval);
 	this_cfid = ixp_create(client->ptr, name, 0, 0);
 	object_instantiate(IxpCFid_ce_ptr, return_value TSRMLS_CC);
-	IxpCFid_object_initialize(return_value, this_cfid);
+	PHP_IxpCFid_initialize(return_value, this_cfid);
 }
 /* }}} create */
 
-/* {{{ proto object open(string name [, string mode]) */
+/* {{{ proto object open(string name [, int mode]) */
 PHP_METHOD(IxpClient, open)
 {
 	zend_class_entry * _this_ce;
 	zval * _this_zval = NULL;
-	const char * name = NULL;
-	int name_len = 0;
-	const char * mode = NULL;
-	int mode_len = 0;
+	IxpCFid *this_cfid;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os|s", &_this_zval, IxpClient_ce_ptr, &name, &name_len, &mode, &mode_len) == FAILURE) {
+	char * name = NULL;
+	int name_len = 0;
+	int mode = 0;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os|l", &_this_zval, IxpClient_ce_ptr, &name, &name_len, &mode) == FAILURE) {
 		return;
 	}
 
 	_this_ce = Z_OBJCE_P(_this_zval);
 
-	php_error(E_WARNING, "open: not yet implemented"); RETURN_FALSE;
-
-	object_init(return_value);
+	if (mode == 0)
+		mode = P9_OREAD;
+	PHP_IxpClient *client = FETCH_IxpClient(_this_zval);
+	this_cfid = ixp_open(client->ptr, name, (uchar)mode);
+	object_instantiate(IxpCFid_ce_ptr, return_value TSRMLS_CC);
+	PHP_IxpCFid_initialize(return_value, this_cfid);
 }
 /* }}} open */
 
