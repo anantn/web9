@@ -75,6 +75,35 @@ static zval * object_instantiate(zend_class_entry *ce, zval *object TSRMLS_DC)
 	return object;
 }
 
+static void PHP_IxpCFid_initialize(zval *obj, IxpCFid *from)
+{
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpCFid *cfid = FETCH_IxpCFid(_this_zval);
+	cfid->ptr = from;
+
+	PROP_SET_LONG(fid, from->fid);
+	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_LONG(open, from->open);
+	PROP_SET_LONG(iounit, from->iounit);
+	PROP_SET_LONG(offset, from->iounit);
+}
+
+static void PHP_IxpStat_initialize(zval *obj, IxpStat *from)
+{
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+	PROP_SET_LONG(type, from->type);
+	PROP_SET_LONG(device, from->dev);
+	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_LONG(aTime, from->atime);
+	PROP_SET_LONG(mTime, from->length);
+	PROP_SET_STRING(name, from->name);
+	PROP_SET_STRING(uid, from->uid);
+	PROP_SET_STRING(gid, from->gid);
+	PROP_SET_STRING(muid, from->muid);
+}
 /* }}} */
 
 /* {{{ Interface IxpCallbacks */
@@ -192,12 +221,16 @@ PHP_METHOD(IxpClient, __construct)
 /* {{{ proto void unmount() */
 PHP_METHOD(IxpClient, unmount)
 {
-	IxpClient *client;
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
 
-	if(ZEND_NUM_ARGS() != 0)
-        WRONG_PARAM_COUNT;
-		
-	PHP_IxpClient *object = FETCH_IxpClient(this_ptr);
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpClient_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);	
+	
+	PHP_IxpClient *object = FETCH_IxpClient(_this_zval);
 	ixp_unmount(object->ptr);
 	RETURN_TRUE;
 }
@@ -208,11 +241,13 @@ PHP_METHOD(IxpClient, create)
 {
 	zend_class_entry * _this_ce;
 	zval * _this_zval = NULL;
-	const char * name = NULL;
+	IxpCFid *this_cfid;
+
+	char * name = NULL;
 	int name_len = 0;
-	const char * permissions = NULL;
+	char * permissions = NULL;
 	int permissions_len = 0;
-	const char * mode = NULL;
+	char * mode = NULL;
 	int mode_len = 0;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os|ss", &_this_zval, IxpClient_ce_ptr, &name, &name_len, &permissions, &permissions_len, &mode, &mode_len) == FAILURE) {
@@ -220,10 +255,11 @@ PHP_METHOD(IxpClient, create)
 	}
 
 	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpClient *client = FETCH_IxpClient(_this_zval);
 
-	php_error(E_WARNING, "create: not yet implemented"); RETURN_FALSE;
-
-	object_init(return_value);
+	this_cfid = ixp_create(client->ptr, name, 0, 0);
+	object_instantiate(IxpCFid_ce_ptr, return_value TSRMLS_CC);
+	IxpCFid_object_initialize(return_value, this_cfid);
 }
 /* }}} create */
 
@@ -289,17 +325,18 @@ PHP_METHOD(IxpClient, stat)
 		RETURN_FALSE;
 	}
 
-	object_init(return_value);
+	object_instantiate(IxpStat_ce_ptr, return_value TSRMLS_CC);
+	PHP_IxpStat_initialize(return_value, stat);
 }
 /* }}} stat */
 
 static zend_function_entry IxpClient_methods[] = {
-	PHP_ME(IxpClient, __construct, NULL, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpClient, unmount, NULL, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpClient, create, IxpClient__create_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpClient, open, IxpClient__open_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpClient, remove, IxpClient__remove_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpClient, stat, IxpClient__stat_args, /**/ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, unmount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, create, IxpClient__create_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, open, IxpClient__open_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, remove, IxpClient__remove_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, stat, IxpClient__stat_args, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -313,14 +350,56 @@ static void class_init_IxpClient(void)
 	memcpy(&PHP_IxpClient_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	PHP_IxpClient_handlers.clone_obj = NULL;
 
-	zend_declare_property_long(IxpClient_ce_ptr, "mSize", sizeof("mSize")-1, 0, ZEND_ACC_PUBLIC TSRMLS_CC);
-	zend_declare_property_long(IxpClient_ce_ptr, "lastFid", sizeof("lastFid")-1, 0, ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_long(IxpClient_ce_ptr,
+			"mSize", sizeof("mSize")-1, 0,
+			ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_long(IxpClient_ce_ptr,
+			"lastFid", sizeof("lastFid")-1, 0,
+			ZEND_ACC_PUBLIC TSRMLS_CC);
 }
 
 /* }}} Class IxpClient */
 
 
 /* {{{ Class IxpCFid */
+
+static zend_object_handlers PHP_IxpCFid_handlers;
+
+static void PHP_IxpCFid_object_free(void *object TSRMLS_DC)
+{
+	PHP_IxpCFid *intern = (PHP_IxpCFid *)object;
+
+	zend_hash_destroy(intern->obj.properties);
+	FREE_HASHTABLE(intern->obj.properties);
+
+	efree(object);
+}
+
+static zend_object_value PHP_IxpCFid_object_new_ex(zend_class_entry *class_type, PHP_IxpCFid **object TSRMLS_DC)
+{
+	zend_object_value retval;
+	PHP_IxpCFid *intern;
+	zval *tmp;
+
+	intern = malloc(sizeof(PHP_IxpCFid));
+	memset(intern, 0, sizeof(PHP_IxpCFid));
+	intern->obj.ce = class_type;
+	*object = intern;
+
+	ALLOC_HASHTABLE(intern->obj.properties);
+	zend_hash_init(intern->obj.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_copy(intern->obj.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
+	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) PHP_IxpCFid_object_free, NULL TSRMLS_CC);
+	retval.handlers = &PHP_IxpCFid_handlers;
+	return retval;
+}
+
+static zend_object_value PHP_IxpCFid_object_new(zend_class_entry *class_type TSRMLS_DC)
+{
+	PHP_IxpCFid *tmp;
+	return PHP_IxpCFid_object_new_ex(class_type, &tmp TSRMLS_DC);
+}
 
 /* {{{ proto int read(string buffer [, int count]) */
 PHP_METHOD(IxpCFid, read)
@@ -381,10 +460,18 @@ PHP_METHOD(IxpCFid, close)
 }
 /* }}} close */
 
+/* {{{ proto object getQid() */
+PHP_METHOD(IxpCFid, getQid)
+{
+
+}
+/* }}} getQid */
+
 static zend_function_entry IxpCFid_methods[] = {
-	PHP_ME(IxpCFid, read, IxpCFid__read_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpCFid, write, IxpCFid__write_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(IxpCFid, close, NULL, /**/ZEND_ACC_PUBLIC)
+	PHP_ME(IxpCFid, read, IxpCFid__read_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpCFid, write, IxpCFid__write_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpCFid, close, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpCFid, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -394,6 +481,9 @@ static void class_init_IxpCFid(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpCFid", IxpCFid_methods);
 	IxpCFid_ce_ptr = zend_register_internal_class(&ce);
+	IxpCFid_ce_ptr->create_object = PHP_IxpCFid_object_new;
+	memcpy(&PHP_IxpCFid_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	PHP_IxpCFid_handlers.clone_obj = NULL;
 
 	zend_declare_property_long(IxpCFid_ce_ptr, 
 		"fid", 3, 0, 
@@ -414,17 +504,70 @@ static void class_init_IxpCFid(void)
 	zend_declare_property_long(IxpCFid_ce_ptr, 
 		"offset", 6, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpCFid_ce_ptr, 
-		"qid", 3, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
 }
 /* }}} Class IxpCFid */
 
 
 /* {{{ Class IxpStat */
 
+static zend_object_handlers PHP_IxpStat_handlers;
+
+static void PHP_IxpStat_object_free(void *object TSRMLS_DC)
+{
+	PHP_IxpStat *intern = (PHP_IxpStat *)object;
+
+	zend_hash_destroy(intern->obj.properties);
+	FREE_HASHTABLE(intern->obj.properties);
+
+	efree(object);
+}
+
+static zend_object_value PHP_IxpStat_object_new_ex(zend_class_entry *class_type, PHP_IxpStat **object TSRMLS_DC)
+{
+	zend_object_value retval;
+	PHP_IxpStat *intern;
+	zval *tmp;
+
+	intern = malloc(sizeof(PHP_IxpStat));
+	memset(intern, 0, sizeof(PHP_IxpStat));
+	intern->obj.ce = class_type;
+	*object = intern;
+
+	ALLOC_HASHTABLE(intern->obj.properties);
+	zend_hash_init(intern->obj.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_copy(intern->obj.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
+	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) PHP_IxpStat_object_free, NULL TSRMLS_CC);
+	retval.handlers = &PHP_IxpStat_handlers;
+	return retval;
+}
+
+static zend_object_value PHP_IxpStat_object_new(zend_class_entry *class_type TSRMLS_DC)
+{
+	PHP_IxpStat *tmp;
+	return PHP_IxpStat_object_new_ex(class_type, &tmp TSRMLS_DC);
+}
+
+/* {{{ proto object getQid(void) */
+PHP_METHOD(IxpStat, getQid)
+{
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpStat_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);
+
+	php_error(E_WARNING, "getQid: not yet implemented"); RETURN_FALSE;
+
+	RETURN_LONG(0)
+}
+/* }}} getQid */
+
 static zend_function_entry IxpStat_methods[] = {
+	PHP_ME(IxpStat, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -434,6 +577,9 @@ static void class_init_IxpStat(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpStat", IxpStat_methods);
 	IxpStat_ce_ptr = zend_register_internal_class(&ce);
+	IxpStat_ce_ptr->create_object = PHP_IxpStat_object_new;
+	memcpy(&PHP_IxpStat_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	PHP_IxpStat_handlers.clone_obj = NULL;
 
 	zend_declare_property_long(IxpStat_ce_ptr, 
 		"type", 4, 0, 
@@ -473,10 +619,6 @@ static void class_init_IxpStat(void)
 
 	zend_declare_property_string(IxpStat_ce_ptr, 
 		"muid", 4, "", 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpStat_ce_ptr, 
-		"qid", 3, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 }
 /* }}} Class IxpStat */

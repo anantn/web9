@@ -123,6 +123,15 @@ PHP_METHOD(IxpCFid, close);
 ZEND_BEGIN_ARG_INFO(IxpCFid__close_args, 0)
 ZEND_END_ARG_INFO()
 
+PHP_METHOD(IxpCFid, getQid);
+ZEND_BEGIN_ARG_INFO(IxpCFid__getQid_args, 0)
+ZEND_END_ARG_INFO()
+
+/* IxpStat */
+PHP_METHOD(IxpStat, getQid);
+ZEND_BEGIN_ARG_INFO(IxpStat__getQid_args, 0)
+ZEND_END_ARG_INFO()
+
 /* IxpConn */
 PHP_METHOD(IxpConn, serve);
 ZEND_BEGIN_ARG_INFO(IxpConn__serve_args, 0)
