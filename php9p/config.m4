@@ -8,10 +8,12 @@ if test "$PHP_IXP" != "no"; then
   AC_DEFINE(HAVE_IXP, 1, [Whether you have IXP])
   
   libixp_sources="libixp/src/client.c \
-    libixp/src/convert.c libixp/src/intmap.c \
-    libixp/src/message.c libixp/src/request.c \
+    libixp/src/convert.c libixp/src/error.c \
+	libixp/src/intmap.c libixp/src/message.c \
+    libixp/src/request.c libixp/src/rpc.c \
     libixp/src/server.c libixp/src/socket.c \
-    libixp/src/transport.c libixp/src/util.c"
+    libixp/src/thread.c libixp/src/transport.c \
+	libixp/src/util.c"
  
   PHP_IXP_CFLAGS="-I@ext_builddir@/libixp -I@ext_builddir@/libixp/src"
 

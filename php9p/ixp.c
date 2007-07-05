@@ -25,16 +25,59 @@
 /* $ Id: $ */ 
 
 #include "php_ixp.h"
-#include "ixp.h"
 
 #if HAVE_IXP
 
-/* {{{ Interface definitions */
+/* {{{ Class entries */
+static zend_class_entry * IxpCallbacks_ce_ptr = NULL;
+static zend_class_entry * IxpServerCallbacks_ce_ptr = NULL;
+static zend_class_entry * IxpClient_ce_ptr = NULL;
+static zend_class_entry * IxpCFid_ce_ptr = NULL;
+static zend_class_entry * IxpStat_ce_ptr = NULL;
+static zend_class_entry * IxpQid_ce_ptr = NULL;
+static zend_class_entry * IxpConn_ce_ptr = NULL;
+static zend_class_entry * IxpFid_ce_ptr = NULL;
+static zend_class_entry * IxpRequest_ce_ptr = NULL;
+static zend_class_entry * IxpFcall_ce_ptr = NULL;
+static zend_class_entry * IxpServer_ce_ptr = NULL;
+/* }}} */
+
+/* {{{ PHP_MINIT_FUNCTION */
+PHP_MINIT_FUNCTION(ixp)
+{
+	class_init_IxpClient();
+	class_init_IxpCFid();
+	class_init_IxpStat();
+	class_init_IxpQid();
+	class_init_IxpConn();
+	class_init_IxpFid();
+	class_init_IxpRequest();
+	class_init_IxpFcall();
+	class_init_IxpServer();
+	interface_init_IxpCallbacks();
+	interface_init_IxpServerCallbacks();
+
+	return SUCCESS;
+}
+/* }}} */
+
+
+/* {{{ Helper functions */
+static zval * object_instantiate(zend_class_entry *ce, zval *object TSRMLS_DC)
+{
+	if (!object)
+		ALLOC_ZVAL(object);
+
+	Z_TYPE_P(object) = IS_OBJECT;
+	object_init_ex(object, ce);
+	object->refcount = 1;
+	object->is_ref = 0;
+	return object;
+}
+
+/* }}} */
 
 /* {{{ Interface IxpCallbacks */
-
-static zend_class_entry * IxpCallbacks_ce_ptr = NULL;
-
 static zend_function_entry IxpCallbacks_methods[] = {
 	ZEND_FENTRY(attach, NULL, IxpCallbacks__attach_args, ZEND_ACC_ABSTRACT |  ZEND_ACC_INTERFACE | ZEND_ACC_PUBLIC)
 	ZEND_FENTRY(clunk, NULL, IxpCallbacks__clunk_args, ZEND_ACC_ABSTRACT |  ZEND_ACC_INTERFACE | ZEND_ACC_PUBLIC)
@@ -57,13 +100,9 @@ static void interface_init_IxpCallbacks(void)
 	INIT_CLASS_ENTRY(ce, "IxpCallbacks", IxpCallbacks_methods);
 	IxpCallbacks_ce_ptr = zend_register_internal_interface(&ce TSRMLS_CC);
 }
-
-/* }}} Class IxpCallbacks */
+/* }}} Interface IxpCallbacks */
 
 /* {{{ Interface IxpServerCallbacks */
-
-static zend_class_entry * IxpServerCallbacks_ce_ptr = NULL;
-
 static zend_function_entry IxpServerCallbacks_methods[] = {
 	ZEND_FENTRY(read, NULL, IxpServerCallbacks__read_args, ZEND_ACC_ABSTRACT |  ZEND_ACC_INTERFACE | ZEND_ACC_PUBLIC)
 	ZEND_FENTRY(close, NULL, IxpServerCallbacks__close_args, ZEND_ACC_ABSTRACT |  ZEND_ACC_INTERFACE | ZEND_ACC_PUBLIC)
@@ -77,65 +116,94 @@ static void interface_init_IxpServerCallbacks(void)
 	INIT_CLASS_ENTRY(ce, "IxpServerCallbacks", IxpServerCallbacks_methods);
 	IxpServerCallbacks_ce_ptr = zend_register_internal_interface(&ce TSRMLS_CC);
 }
+/* }}} Interface IxpServerCallbacks */
 
-/* }}} Class IxpServerCallbacks */
-
-/* }}} Interface definitions*/
-
-/* {{{ Class definitions */
 
 /* {{{ Class IxpClient */
 
-static zend_class_entry * IxpClient_ce_ptr = NULL;
+static zend_object_handlers PHP_IxpClient_handlers;
 
-/* {{{ Methods */
+static void PHP_IxpClient_object_free(void *object TSRMLS_DC)
+{
+	PHP_IxpClient *intern = (PHP_IxpClient *)object;
 
+	zend_hash_destroy(intern->obj.properties);
+	FREE_HASHTABLE(intern->obj.properties);
 
-/* {{{ proto void construct(string path)
-   */
+	efree(object);
+}
+
+static zend_object_value PHP_IxpClient_object_new_ex(zend_class_entry *class_type, PHP_IxpClient **object TSRMLS_DC)
+{
+	zend_object_value retval;
+	PHP_IxpClient *intern;
+	zval *tmp;
+
+	intern = malloc(sizeof(PHP_IxpClient));
+	memset(intern, 0, sizeof(PHP_IxpClient));
+	intern->obj.ce = class_type;
+	*object = intern;
+
+	ALLOC_HASHTABLE(intern->obj.properties);
+	zend_hash_init(intern->obj.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_copy(intern->obj.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
+	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) PHP_IxpClient_object_free, NULL TSRMLS_CC);
+	retval.handlers = &PHP_IxpClient_handlers;
+	return retval;
+}
+
+static zend_object_value PHP_IxpClient_object_new(zend_class_entry *class_type TSRMLS_DC)
+{
+	PHP_IxpClient *tmp;
+	return PHP_IxpClient_object_new_ex(class_type, &tmp TSRMLS_DC);
+}
+
+/* {{{ proto void construct(string path) */
 PHP_METHOD(IxpClient, __construct)
 {
 	zend_class_entry * _this_ce;
-	zval * _this_zval;
-	const char * path = NULL;
+	zval * _this_zval = NULL;
+	IxpClient *client;
+
+	char * path = NULL;
 	int path_len = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) { 
 		return;
 	}
 
+	client = ixp_mount(path);
+	if (client == nil) {
+		php_error(E_WARNING, ixp_errbuf());
+		RETURN_FALSE;
+	}
+
 	_this_zval = getThis();
-	_this_ce = Z_OBJCE_P(_this_zval);
+    _this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpClient *object = FETCH_IxpClient(_this_zval);
+	object->ptr = client;
 
-	php_error(E_WARNING, "__construct: not yet implemented"); RETURN_FALSE;
-
+	PROP_SET_LONG(mSize, client->msize);
+	PROP_SET_LONG(lastFid, client->lastfid);
 }
 /* }}} __construct */
 
-
-
-/* {{{ proto void unmount()
-   */
+/* {{{ proto void unmount() */
 PHP_METHOD(IxpClient, unmount)
 {
-	zend_class_entry * _this_ce;
-	zval * _this_zval = NULL;
+	IxpClient *client;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpClient_ce_ptr) == FAILURE) {
-		return;
-	}
-
-	_this_ce = Z_OBJCE_P(_this_zval);
-
-	php_error(E_WARNING, "unmount: not yet implemented"); RETURN_FALSE;
-
+	if(ZEND_NUM_ARGS() != 0)
+        WRONG_PARAM_COUNT;
+		
+	PHP_IxpClient *object = FETCH_IxpClient(this_ptr);
+	ixp_unmount(object->ptr);
+	RETURN_TRUE;
 }
 /* }}} unmount */
 
-
-
-/* {{{ proto object create(string name [, string permissions [, string mode]])
-   */
+/* {{{ proto object create(string name [, string permissions [, string mode]]) */
 PHP_METHOD(IxpClient, create)
 {
 	zend_class_entry * _this_ce;
@@ -159,10 +227,7 @@ PHP_METHOD(IxpClient, create)
 }
 /* }}} create */
 
-
-
-/* {{{ proto object open(string name [, string mode])
-   */
+/* {{{ proto object open(string name [, string mode]) */
 PHP_METHOD(IxpClient, open)
 {
 	zend_class_entry * _this_ce;
@@ -184,52 +249,49 @@ PHP_METHOD(IxpClient, open)
 }
 /* }}} open */
 
-
-
-/* {{{ proto int remove(string path)
-   */
+/* {{{ proto bool remove(string path) */
 PHP_METHOD(IxpClient, remove)
 {
-	zend_class_entry * _this_ce;
-	zval * _this_zval = NULL;
-	const char * path = NULL;
+	char * path = NULL;
 	int path_len = 0;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &_this_zval, IxpClient_ce_ptr, &path, &path_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) {
 		return;
 	}
 
-	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpClient *object = FETCH_IxpClient(this_ptr);
 
-	php_error(E_WARNING, "remove: not yet implemented"); RETURN_FALSE;
+	if (ixp_remove(object->ptr, path) == 0) {
+		php_error(E_WARNING, ixp_errbuf());
+		RETURN_FALSE;
+	}
 
-	RETURN_LONG(0);
+	RETURN_TRUE;
 }
 /* }}} remove */
 
-
-
-/* {{{ proto object stat(string path)
-   */
+/* {{{ proto object stat(string path) */
 PHP_METHOD(IxpClient, stat)
 {
-	zend_class_entry * _this_ce;
-	zval * _this_zval = NULL;
-	const char * path = NULL;
+	IxpStat *stat;
+	char * path = NULL;
 	int path_len = 0;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &_this_zval, IxpClient_ce_ptr, &path, &path_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) {
 		return;
 	}
 
-	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpClient *object = FETCH_IxpClient(this_ptr);
 
-	php_error(E_WARNING, "stat: not yet implemented"); RETURN_FALSE;
+	stat = ixp_stat(object->ptr, path);
+	if (stat == nil) {
+		php_error(E_WARNING, ixp_errbuf());
+		RETURN_FALSE;
+	}
 
 	object_init(return_value);
 }
 /* }}} stat */
-
 
 static zend_function_entry IxpClient_methods[] = {
 	PHP_ME(IxpClient, __construct, NULL, /**/ZEND_ACC_PUBLIC)
@@ -241,52 +303,26 @@ static zend_function_entry IxpClient_methods[] = {
 	{ NULL, NULL, NULL }
 };
 
-/* }}} Methods */
-
 static void class_init_IxpClient(void)
 {
 	zend_class_entry ce;
 
 	INIT_CLASS_ENTRY(ce, "IxpClient", IxpClient_methods);
 	IxpClient_ce_ptr = zend_register_internal_class(&ce);
+	IxpClient_ce_ptr->create_object = PHP_IxpClient_object_new;
+	memcpy(&PHP_IxpClient_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	PHP_IxpClient_handlers.clone_obj = NULL;
 
-	/* {{{ Property registration */
-
-	zend_declare_property_long(IxpClient_ce_ptr, 
-		"mSize", 5, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_long(IxpClient_ce_ptr, 
-		"lastFid", 7, 0, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpClient_ce_ptr, 
-		"fd", 2, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpClient_ce_ptr, 
-		"freeFid", 7, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpClient_ce_ptr, 
-		"message", 7, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
+	zend_declare_property_long(IxpClient_ce_ptr, "mSize", sizeof("mSize")-1, 0, ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_long(IxpClient_ce_ptr, "lastFid", sizeof("lastFid")-1, 0, ZEND_ACC_PUBLIC TSRMLS_CC);
 }
 
 /* }}} Class IxpClient */
 
+
 /* {{{ Class IxpCFid */
 
-static zend_class_entry * IxpCFid_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-
-/* {{{ proto int read(string buffer [, int count])
-   */
+/* {{{ proto int read(string buffer [, int count]) */
 PHP_METHOD(IxpCFid, read)
 {
 	zend_class_entry * _this_ce;
@@ -307,10 +343,7 @@ PHP_METHOD(IxpCFid, read)
 }
 /* }}} read */
 
-
-
-/* {{{ proto int write(string buffer)
-   */
+/* {{{ proto int write(string buffer) */
 PHP_METHOD(IxpCFid, write)
 {
 	zend_class_entry * _this_ce;
@@ -330,10 +363,7 @@ PHP_METHOD(IxpCFid, write)
 }
 /* }}} write */
 
-
-
-/* {{{ proto int close()
-   */
+/* {{{ proto int close() */
 PHP_METHOD(IxpCFid, close)
 {
 	zend_class_entry * _this_ce;
@@ -351,7 +381,6 @@ PHP_METHOD(IxpCFid, close)
 }
 /* }}} close */
 
-
 static zend_function_entry IxpCFid_methods[] = {
 	PHP_ME(IxpCFid, read, IxpCFid__read_args, /**/ZEND_ACC_PUBLIC)
 	PHP_ME(IxpCFid, write, IxpCFid__write_args, /**/ZEND_ACC_PUBLIC)
@@ -359,16 +388,12 @@ static zend_function_entry IxpCFid_methods[] = {
 	{ NULL, NULL, NULL }
 };
 
-/* }}} Methods */
-
 static void class_init_IxpCFid(void)
 {
 	zend_class_entry ce;
 
 	INIT_CLASS_ENTRY(ce, "IxpCFid", IxpCFid_methods);
 	IxpCFid_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_long(IxpCFid_ce_ptr, 
 		"fid", 3, 0, 
@@ -393,24 +418,15 @@ static void class_init_IxpCFid(void)
 	zend_declare_property_null(IxpCFid_ce_ptr, 
 		"qid", 3, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpCFid */
 
+
 /* {{{ Class IxpStat */
-
-static zend_class_entry * IxpStat_ce_ptr = NULL;
-
-/* {{{ Methods */
 
 static zend_function_entry IxpStat_methods[] = {
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpStat(void)
 {
@@ -418,8 +434,6 @@ static void class_init_IxpStat(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpStat", IxpStat_methods);
 	IxpStat_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_long(IxpStat_ce_ptr, 
 		"type", 4, 0, 
@@ -464,24 +478,14 @@ static void class_init_IxpStat(void)
 	zend_declare_property_null(IxpStat_ce_ptr, 
 		"qid", 3, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpStat */
 
+
 /* {{{ Class IxpQid */
-
-static zend_class_entry * IxpQid_ce_ptr = NULL;
-
-/* {{{ Methods */
-
 static zend_function_entry IxpQid_methods[] = {
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpQid(void)
 {
@@ -489,8 +493,6 @@ static void class_init_IxpQid(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpQid", IxpQid_methods);
 	IxpQid_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_long(IxpQid_ce_ptr, 
 		"type", 4, 0, 
@@ -503,22 +505,13 @@ static void class_init_IxpQid(void)
 	zend_declare_property_string(IxpQid_ce_ptr, 
 		"path", 4, "", 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpQid */
+
 
 /* {{{ Class IxpConn */
 
-static zend_class_entry * IxpConn_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-
-/* {{{ proto void serve()
-   */
+/* {{{ proto void serve() */
 PHP_METHOD(IxpConn, serve)
 {
 	zend_class_entry * _this_ce;
@@ -535,13 +528,10 @@ PHP_METHOD(IxpConn, serve)
 }
 /* }}} serve */
 
-
 static zend_function_entry IxpConn_methods[] = {
 	PHP_ME(IxpConn, serve, NULL, /**/ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpConn(void)
 {
@@ -549,8 +539,6 @@ static void class_init_IxpConn(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpConn", IxpConn_methods);
 	IxpConn_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_long(IxpConn_ce_ptr, 
 		"closed", 6, 0, 
@@ -563,24 +551,14 @@ static void class_init_IxpConn(void)
 	zend_declare_property_null(IxpConn_ce_ptr, 
 		"fd", 2, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpConn */
 
+
 /* {{{ Class IxpFid */
-
-static zend_class_entry * IxpFid_ce_ptr = NULL;
-
-/* {{{ Methods */
-
 static zend_function_entry IxpFid_methods[] = {
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpFid(void)
 {
@@ -588,8 +566,6 @@ static void class_init_IxpFid(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpFid", IxpFid_methods);
 	IxpFid_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_null(IxpFid_ce_ptr, 
 		"qid", 3, 
@@ -606,22 +582,13 @@ static void class_init_IxpFid(void)
 	zend_declare_property_long(IxpFid_ce_ptr, 
 		"omode", 5, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpFid */
+
 
 /* {{{ Class IxpRequest */
 
-static zend_class_entry * IxpRequest_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-
-/* {{{ proto void respond(string error)
-   */
+/* {{{ proto void respond(string error) */
 PHP_METHOD(IxpRequest, respond)
 {
 	zend_class_entry * _this_ce;
@@ -640,13 +607,10 @@ PHP_METHOD(IxpRequest, respond)
 }
 /* }}} respond */
 
-
 static zend_function_entry IxpRequest_methods[] = {
 	PHP_ME(IxpRequest, respond, IxpRequest__respond_args, /**/ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpRequest(void)
 {
@@ -654,8 +618,6 @@ static void class_init_IxpRequest(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpRequest", IxpRequest_methods);
 	IxpRequest_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_null(IxpRequest_ce_ptr, 
 		"fid", 3, 
@@ -676,24 +638,14 @@ static void class_init_IxpRequest(void)
 	zend_declare_property_null(IxpRequest_ce_ptr, 
 		"oldreq", 6, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
-
 /* }}} Class IxpRequest */
 
+
 /* {{{ Class IxpFcall */
-
-static zend_class_entry * IxpFcall_ce_ptr = NULL;
-
-/* {{{ Methods */
-
 static zend_function_entry IxpFcall_methods[] = {
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpFcall(void)
 {
@@ -701,8 +653,6 @@ static void class_init_IxpFcall(void)
 
 	INIT_CLASS_ENTRY(ce, "IxpFcall", IxpFcall_methods);
 	IxpFcall_ce_ptr = zend_register_internal_class(&ce);
-
-	/* {{{ Property registration */
 
 	zend_declare_property_long(IxpFcall_ce_ptr, 
 		"type", 4, 0, 
@@ -807,22 +757,14 @@ static void class_init_IxpFcall(void)
 	zend_declare_property_string(IxpFcall_ce_ptr, 
 		"stat", 4, "", 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	/* }}} Property registration */
-
 }
 
 /* }}} Class IxpFcall */
 
+
 /* {{{ Class IxpServer */
 
-static zend_class_entry * IxpServer_ce_ptr = NULL;
-
-/* {{{ Methods */
-
-
-/* {{{ proto void construct(string address, object IxpCallbacks[, object IxpServerCallbacks])
-   */
+/* {{{ proto void construct(string address, object IxpCallbacks[, object IxpServerCallbacks]) */
 PHP_METHOD(IxpServer, __construct)
 {
 	zend_class_entry * _this_ce;
@@ -844,10 +786,7 @@ PHP_METHOD(IxpServer, __construct)
 }
 /* }}} __construct */
 
-
-
-/* {{{ proto void start()
-   */
+/* {{{ proto void start() */
 PHP_METHOD(IxpServer, start)
 {
 	zend_class_entry * _this_ce;
@@ -864,10 +803,7 @@ PHP_METHOD(IxpServer, start)
 }
 /* }}} start */
 
-
-
-/* {{{ proto void stop()
-   */
+/* {{{ proto void stop() */
 PHP_METHOD(IxpServer, stop)
 {
 	zend_class_entry * _this_ce;
@@ -884,15 +820,12 @@ PHP_METHOD(IxpServer, stop)
 }
 /* }}} stop */
 
-
 static zend_function_entry IxpServer_methods[] = {
 	PHP_ME(IxpServer, __construct, IxpServer____construct_args, /**/ZEND_ACC_PUBLIC)
 	PHP_ME(IxpServer, start, NULL, /**/ZEND_ACC_PUBLIC)
 	PHP_ME(IxpServer, stop, NULL, /**/ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
-
-/* }}} Methods */
 
 static void class_init_IxpServer(void)
 {
@@ -901,10 +834,7 @@ static void class_init_IxpServer(void)
 	INIT_CLASS_ENTRY(ce, "IxpServer", IxpServer_methods);
 	IxpServer_ce_ptr = zend_register_internal_class(&ce);
 }
-
 /* }}} Class IxpServer */
-
-/* }}} Class definitions*/
 
 /* {{{ ixp_functions[] */
 function_entry ixp_functions[] = {
@@ -914,8 +844,7 @@ function_entry ixp_functions[] = {
 /* }}} */
 
 
-/* {{{ ixp_module_entry
- */
+/* {{{ ixp_module_entry */
 zend_module_entry ixp_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"ixp",
@@ -934,59 +863,26 @@ zend_module_entry ixp_module_entry = {
 ZEND_GET_MODULE(ixp)
 #endif
 
-
-/* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(ixp)
-{
-	class_init_IxpClient();
-	class_init_IxpCFid();
-	class_init_IxpStat();
-	class_init_IxpQid();
-	class_init_IxpConn();
-	class_init_IxpFid();
-	class_init_IxpRequest();
-	class_init_IxpFcall();
-	class_init_IxpServer();
-	interface_init_IxpCallbacks();
-	interface_init_IxpServerCallbacks();
-
-	/* add your stuff here */
-
-	return SUCCESS;
-}
-/* }}} */
-
-
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
 PHP_MSHUTDOWN_FUNCTION(ixp)
 {
-
-	/* add your stuff here */
-
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(ixp)
 {
-	/* add your stuff here */
-
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ PHP_RSHUTDOWN_FUNCTION */
 PHP_RSHUTDOWN_FUNCTION(ixp)
 {
-	/* add your stuff here */
-
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(ixp)
@@ -997,8 +893,6 @@ PHP_MINFO_FUNCTION(ixp)
 	php_printf("<p><b>Authors:</b></p>\n");
 	php_printf("<p>Anant Narayanan &lt;anant@php.net&gt; (lead)</p>\n");
 	php_info_print_box_end();
-	/* add your stuff here */
-
 }
 /* }}} */
 
@@ -1010,6 +904,6 @@ PHP_MINFO_FUNCTION(ixp)
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim600: noet sw=4 ts=4 fdm=marker
+ * vim600: noet sw=4 ts=4 
  * vim<600: noet sw=4 ts=4
  */

@@ -118,7 +118,7 @@ enum {
 #define P9_DMSETUID	0x00080000	/* mode bit for setuid (Unix, 9P2000.u) */
 #define P9_DMSETGID	0x00040000	/* mode bit for setgid (Unix, 9P2000.u) */
 
-#ifdef IXP_NO_P9_
+//#ifdef IXP_NO_P9_
 #  define TVersion P9_TVersion
 #  define RVersion P9_RVersion
 #  define TAuth P9_TAuth
@@ -179,14 +179,14 @@ enum {
 #  define DMSOCKET P9_DMSOCKET
 #  define DMSETUID P9_DMSETUID
 #  define DMSETGID P9_DMSETGID
-#endif
+//#endif
 
-#ifdef IXP_P9_STRUCTS
+//#ifdef IXP_P9_STRUCTS
 #  define IxpFcall Fcall
 #  define IxpFid Fid
 #  define IxpQid Qid
 #  define IxpStat Stat
-#endif
+//#endif
 
 typedef struct Intmap Intmap;
 typedef struct Ixp9Conn Ixp9Conn;
