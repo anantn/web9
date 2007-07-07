@@ -136,10 +136,27 @@ PHP_METHOD(IxpConn, serve);
 ZEND_BEGIN_ARG_INFO(IxpConn__serve_args, 0)
 ZEND_END_ARG_INFO()
 
+PHP_METHOD(IxpConn, hangup);
+ZEND_BEGIN_ARG_INFO(IxpConn__hangup_args, 0)
+ZEND_END_ARG_INFO()
+
 /* IxpRequest */
 PHP_METHOD(IxpRequest, respond);
 ZEND_BEGIN_ARG_INFO(IxpRequest__respond_args, 0)
   ZEND_ARG_INFO(0, error)
+ZEND_END_ARG_INFO()
+
+/* IxpFcall */
+PHP_METHOD(IxpFcall, getQid);
+ZEND_BEGIN_ARG_INFO(IxpFcall__getQid_args, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(IxpFcall, getAQid);
+ZEND_BEGIN_ARG_INFO(IxpFcall__getAQid_args, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(IxpFcall, getWQid);
+ZEND_BEGIN_ARG_INFO(IxpFcall__getWQid_args, 0)
 ZEND_END_ARG_INFO()
 
 /* IxpServer */
@@ -147,6 +164,10 @@ PHP_METHOD(IxpServer, __construct);
 ZEND_BEGIN_ARG_INFO(IxpServer____construct_args, 0)
   ZEND_ARG_INFO(0, IxpCallbacks)
   ZEND_ARG_INFO(0, IxpServerCallbacks)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(IxpServer, manual);
+ZEND_BEGIN_ARG_INFO(IxpServer__manual_args, 0)
 ZEND_END_ARG_INFO()
 
 PHP_METHOD(IxpServer, start);
@@ -213,7 +234,21 @@ ZEND_END_ARG_INFO()
 
 /* }}} Reflection info */
 
-/* structures */
+/* special aux structures */
+typedef struct _PHP_IxpServer_aux PHP_IxpServer_aux;
+struct _PHP_IxpServer_aux {
+	zval *aux;
+	zval *callbacks;
+	int is_9srv;
+};
+
+typedef struct _PHP_Ixp9Srv_aux PHP_Ixp9Srv_aux;
+struct _PHP_Ixp9Srv_aux {
+	zval *aux;
+	zval *callbacks;
+};
+
+/* class structures */
 typedef struct _PHP_IxpClient PHP_IxpClient;
 struct _PHP_IxpClient {
 	zend_object obj;
