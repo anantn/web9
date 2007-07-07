@@ -230,14 +230,6 @@ ZEND_END_ARG_INFO()
 
 /* }}} Reflection info */
 
-/* special aux structure */
-typedef struct _PHP_IxpServerAux PHP_IxpServerAux;
-struct _PHP_IxpServerAux {
-	zval *callbacks;
-	zval *server_obj;
-	int manual;
-};
-
 /* class structures */
 typedef struct _PHP_IxpClient PHP_IxpClient;
 struct _PHP_IxpClient {

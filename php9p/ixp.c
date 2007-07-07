@@ -145,24 +145,40 @@ static void PHP_IxpConn_initialize(zval *obj, IxpConn *from)
 
 	PROP_SET_LONG(closed, from->closed);
 }
+/* }}} helper functions */
 
+
+/* {{{ Marshallers */
 static void PHP_IxpServerCallbacks_read_marshal(IxpConn *conn)
 {
-	zval *cb, *ret;
 	IxpServer *srv;
-	PHP_IxpServerAux *container;
-	
 	srv = conn->srv;
-	container = srv->aux;
-	cb = container->callbacks;
-
-	object_instantiate(IxpConn_ce_ptr, ret);
-	PHP_IxpConn_initialize(ret, conn);
+	if (srv->aux == NULL) {
+		serve_9pcon(conn);
+	} else {
+	   	zval *cb, *ret, *args[1], retval, funcname;
+		ZVAL_STRING(&funcname, "read", 0);
+		cb = srv->aux;
+		object_instantiate(IxpConn_ce_ptr, ret);
+		PHP_IxpConn_initialize(ret, conn);
+		args[0] = ret;
+		call_user_function(EG(function_table), &cb, &funcname, &retval, 1, args TSRMLS_CC);
+	}
 }
 
 static void PHP_IxpServerCallbacks_close_marshal(IxpConn *conn)
 {
-
+	IxpServer *srv;
+	srv = conn->srv;
+	if (srv->aux != NULL) {
+	   	zval *cb, *ret, *args[1], retval, funcname;
+		ZVAL_STRING(&funcname, "close", 0);
+		cb = srv->aux;
+		object_instantiate(IxpConn_ce_ptr, ret);
+		PHP_IxpConn_initialize(ret, conn);
+		args[0] = ret;
+		call_user_function(EG(function_table), &cb, &funcname, &retval, 1, args TSRMLS_CC);
+	}
 }
 
 static void PHP_IxpCallbacks_attach_marshal(Ixp9Req *req)
@@ -220,7 +236,8 @@ static void PHP_IxpCallbacks_freefid_marshal(IxpFid *fid)
 
 }
 
-/* }}} */
+/* }}} Marshallers */
+
 
 /* {{{ Interface IxpCallbacks */
 static zend_function_entry IxpCallbacks_methods[] = {
@@ -1331,18 +1348,12 @@ PHP_METHOD(IxpServer, __construct)
 		return;
 	}
 
-	PHP_IxpServerAux this_server_aux = {
-		.callbacks	= IxpServerCallbacks,
-		.server_obj	= return_value
-	};
-
-	if (IxpServerCallbacks == NULL)
-		this_server_aux.manual = 0;
-	else
-		this_server_aux.manual = 1;
-
+	_this_zval = getThis();
+	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpServer *object = FETCH_IxpServer(_this_zval);
+	
 	IxpServer this_server = {
-		.aux		= &this_server_aux
+		.aux		= IxpCallbacks
 	};
 
 	Ixp9Srv this_srv = {
@@ -1360,17 +1371,13 @@ PHP_METHOD(IxpServer, __construct)
 		.freefid	= PHP_IxpCallbacks_freefid_marshal
 	};
 
-	_this_zval = getThis();
-	_this_ce = Z_OBJCE_P(_this_zval);
-	PHP_IxpServer *object = FETCH_IxpServer(_this_zval);
-
 	sock = ixp_announce(address);
 	if (sock < 0) {
 		php_error(E_WARNING, ixp_errbuf());
 		RETURN_FALSE;
 	}
 
-	conn = ixp_listen(&this_server, sock, &this_srv, nil, nil);
+	conn = ixp_listen(&this_server, sock, &this_srv, PHP_IxpServerCallbacks_read_marshal, PHP_IxpServerCallbacks_close_marshal);
 	object->ptr = &this_server;
 }
 /* }}} __construct */
@@ -1388,7 +1395,6 @@ PHP_METHOD(IxpServer, start)
 	_this_ce = Z_OBJCE_P(_this_zval);
 
 	php_error(E_WARNING, "start: not yet implemented"); RETURN_FALSE;
-
 }
 /* }}} start */
 
