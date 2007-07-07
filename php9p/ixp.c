@@ -92,36 +92,6 @@ static zval * object_instantiate(zend_class_entry *ce, zval *object TSRMLS_DC)
 	return object;
 }
 
-static void PHP_IxpCFid_initialize(zval *obj, IxpCFid *from)
-{
-	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
-	zval *_this_zval = obj;
-
-	PHP_IxpCFid *cfid = FETCH_IxpCFid(_this_zval);
-	cfid->ptr = from;
-
-	PROP_SET_LONG(fid, from->fid);
-	PROP_SET_LONG(mode, from->mode);
-	PROP_SET_LONG(open, from->open);
-	PROP_SET_LONG(iounit, from->iounit);
-	PROP_SET_LONG(offset, from->iounit);
-}
-
-static void PHP_IxpStat_initialize(zval *obj, IxpStat *from)
-{
-	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
-	zval *_this_zval = obj;
-	PROP_SET_LONG(type, from->type);
-	PROP_SET_LONG(device, from->dev);
-	PROP_SET_LONG(mode, from->mode);
-	PROP_SET_LONG(aTime, from->atime);
-	PROP_SET_LONG(mTime, from->length);
-	PROP_SET_STRING(name, from->name);
-	PROP_SET_STRING(uid, from->uid);
-	PROP_SET_STRING(gid, from->gid);
-	PROP_SET_STRING(muid, from->muid);
-}
-
 static void PHP_IxpQid_initialize(zval *obj, IxpQid from)
 {
 	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
@@ -133,6 +103,50 @@ static void PHP_IxpQid_initialize(zval *obj, IxpQid from)
 	PROP_SET_LONG(type, from.type);
 	PROP_SET_LONG(version, from.version);
 	PROP_SET_LONG(path, from.path);
+}
+
+static void PHP_IxpCFid_initialize(zval *obj, IxpCFid *from)
+{
+	zval *ret;
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpCFid *cfid = FETCH_IxpCFid(_this_zval);
+	cfid->ptr = from;
+
+	object_instantiate(IxpQid_ce_ptr, ret);
+	PHP_IxpQid_initialize(ret, from->qid);
+	add_property_zval_ex(_this_zval, "qid", 4, ret);
+
+	PROP_SET_LONG(fid, from->fid);
+	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_LONG(open, from->open);
+	PROP_SET_LONG(iounit, from->iounit);
+	PROP_SET_LONG(offset, from->iounit);
+}
+
+static void PHP_IxpStat_initialize(zval *obj, IxpStat *from)
+{
+	zval *ret;
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpStat *stat = FETCH_IxpStat(_this_zval);
+	stat->ptr = from;
+
+	object_instantiate(IxpQid_ce_ptr, ret);
+	PHP_IxpQid_initialize(ret, from->qid);
+	add_property_zval_ex(_this_zval, "qid", 4, ret);
+
+	PROP_SET_LONG(type, from->type);
+	PROP_SET_LONG(device, from->dev);
+	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_LONG(aTime, from->atime);
+	PROP_SET_LONG(mTime, from->length);
+	PROP_SET_STRING(name, from->name);
+	PROP_SET_STRING(uid, from->uid);
+	PROP_SET_STRING(gid, from->gid);
+	PROP_SET_STRING(muid, from->muid);
 }
 
 static void PHP_IxpConn_initialize(zval *obj, IxpConn *from)
@@ -607,35 +621,17 @@ PHP_METHOD(IxpCFid, close)
 }
 /* }}} close */
 
-/* {{{ proto object getQid() */
-PHP_METHOD(IxpCFid, getQid)
-{
-	zend_class_entry * _this_ce;
-	zval * _this_zval = NULL;
-
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpCFid_ce_ptr) == FAILURE) {
-		return;
-	}
-
-	_this_ce = Z_OBJCE_P(_this_zval);
-	PHP_IxpCFid *object = FETCH_IxpCFid(_this_zval);
-
-	object_instantiate(IxpQid_ce_ptr, return_value);
-	PHP_IxpQid_initialize(return_value, object->ptr->qid);
-}
-/* }}} getQid */
-
 static zend_function_entry IxpCFid_methods[] = {
 	PHP_ME(IxpCFid, read, IxpCFid__read_args, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpCFid, write, IxpCFid__write_args, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpCFid, close, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(IxpCFid, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
 static void class_init_IxpCFid(void)
 {
 	zend_class_entry ce;
+	zval *empty = NULL;
 
 	INIT_CLASS_ENTRY(ce, "IxpCFid", IxpCFid_methods);
 	IxpCFid_ce_ptr = zend_register_internal_class(&ce);
@@ -706,26 +702,7 @@ static zend_object_value PHP_IxpStat_object_new(zend_class_entry *class_type TSR
 	return PHP_IxpStat_object_new_ex(class_type, &tmp TSRMLS_DC);
 }
 
-/* {{{ proto object getQid(void) */
-PHP_METHOD(IxpStat, getQid)
-{
-	zend_class_entry * _this_ce;
-	zval * _this_zval = NULL;
-
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpStat_ce_ptr) == FAILURE) {
-		return;
-	}
-
-	_this_ce = Z_OBJCE_P(_this_zval);
-	PHP_IxpStat *object = FETCH_IxpStat(_this_zval);
-
-	object_instantiate(IxpQid_ce_ptr, return_value);
-	PHP_IxpQid_initialize(return_value, object->ptr->qid);
-}
-/* }}} getQid */
-
 static zend_function_entry IxpStat_methods[] = {
-	PHP_ME(IxpStat, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
