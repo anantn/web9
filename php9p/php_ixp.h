@@ -166,10 +166,6 @@ ZEND_BEGIN_ARG_INFO(IxpServer____construct_args, 0)
   ZEND_ARG_INFO(0, IxpServerCallbacks)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(IxpServer, manual);
-ZEND_BEGIN_ARG_INFO(IxpServer__manual_args, 0)
-ZEND_END_ARG_INFO()
-
 PHP_METHOD(IxpServer, start);
 ZEND_BEGIN_ARG_INFO(IxpServer__start_args, 0)
 ZEND_END_ARG_INFO()
@@ -234,18 +230,12 @@ ZEND_END_ARG_INFO()
 
 /* }}} Reflection info */
 
-/* special aux structures */
-typedef struct _PHP_IxpServer_aux PHP_IxpServer_aux;
-struct _PHP_IxpServer_aux {
-	zval *aux;
+/* special aux structure */
+typedef struct _PHP_IxpServerAux PHP_IxpServerAux;
+struct _PHP_IxpServerAux {
 	zval *callbacks;
-	int is_9srv;
-};
-
-typedef struct _PHP_Ixp9Srv_aux PHP_Ixp9Srv_aux;
-struct _PHP_Ixp9Srv_aux {
-	zval *aux;
-	zval *callbacks;
+	zval *server_obj;
+	int manual;
 };
 
 /* class structures */

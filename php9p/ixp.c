@@ -135,9 +135,29 @@ static void PHP_IxpQid_initialize(zval *obj, IxpQid from)
 	PROP_SET_LONG(path, from.path);
 }
 
+static void PHP_IxpConn_initialize(zval *obj, IxpConn *from)
+{
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpConn *qid = FETCH_IxpConn(_this_zval);
+	qid->ptr = from;
+
+	PROP_SET_LONG(closed, from->closed);
+}
+
 static void PHP_IxpServerCallbacks_read_marshal(IxpConn *conn)
 {
+	zval *cb, *ret;
+	IxpServer *srv;
+	PHP_IxpServerAux *container;
+	
+	srv = conn->srv;
+	container = srv->aux;
+	cb = container->callbacks;
 
+	object_instantiate(IxpConn_ce_ptr, ret);
+	PHP_IxpConn_initialize(ret, conn);
 }
 
 static void PHP_IxpServerCallbacks_close_marshal(IxpConn *conn)
@@ -195,7 +215,7 @@ static void PHP_IxpCallbacks_write_marshal(Ixp9Req *req)
 
 }
 
-static void PHP_IxpCallbacks_freefid_marshal(Ixp9Req *req)
+static void PHP_IxpCallbacks_freefid_marshal(IxpFid *fid)
 {
 
 }
@@ -907,14 +927,6 @@ static void class_init_IxpConn(void)
 	zend_declare_property_long(IxpConn_ce_ptr, 
 		"closed", 6, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpConn_ce_ptr, 
-		"running", 7, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
-	zend_declare_property_null(IxpConn_ce_ptr, 
-		"fd", 2, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
 }
 /* }}} Class IxpConn */
 
@@ -1301,7 +1313,7 @@ static void class_init_IxpFcall(void)
 
 /* {{{ Class IxpServer */
 
-/* {{{ proto void construct(string address, object IxpCallbacks[, zval IxpServerAux[, zval Ixp9SrvAux[, object IxpServerCallbacks]) */
+/* {{{ proto void construct(string address, object IxpCallbacks[, object IxpServerCallbacks]) */
 PHP_METHOD(IxpServer, __construct)
 {
 	zend_class_entry * _this_ce;
@@ -1314,30 +1326,27 @@ PHP_METHOD(IxpServer, __construct)
 
 	zval * IxpCallbacks = NULL;
 	zval * IxpServerCallbacks = NULL;
-	zval * IxpServerAux = NULL;
-	zval * Ixp9SrvAux = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sO|z!z!O", &address, &address_len, &IxpCallbacks, IxpCallbacks_ce_ptr, &IxpServerAux, &Ixp9SrvAux, &IxpServerCallbacks, IxpServerCallbacks_ce_ptr) == FAILURE) { 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sO|O", &address, &address_len, &IxpCallbacks, IxpCallbacks_ce_ptr, &IxpServerCallbacks, IxpServerCallbacks_ce_ptr) == FAILURE) { 
 		return;
 	}
 
 	PHP_IxpServerAux this_server_aux = {
-		.aux		= IxpServerAux,
 		.callbacks	= IxpServerCallbacks,
-		.is_9srv	= 1
-	}
+		.server_obj	= return_value
+	};
 
-	PHP_Ixp9SrvAux this_9srv_aux = {
-		.aux		= Ixp9SrvAux,
-		.callbacks	= IxpCallbacks
-	}
+	if (IxpServerCallbacks == NULL)
+		this_server_aux.manual = 0;
+	else
+		this_server_aux.manual = 1;
 
 	IxpServer this_server = {
 		.aux		= &this_server_aux
-	}
+	};
 
 	Ixp9Srv this_srv = {
-		.aux		= &this_9srv_aux,
+		.aux		= IxpCallbacks,
 		.open 		= PHP_IxpCallbacks_open_marshal,
 		.walk		= PHP_IxpCallbacks_walk_marshal,
 		.read		= PHP_IxpCallbacks_read_marshal,
@@ -1348,8 +1357,8 @@ PHP_METHOD(IxpServer, __construct)
 		.attach		= PHP_IxpCallbacks_attach_marshal,
 		.create		= PHP_IxpCallbacks_create_marshal,
 		.remove		= PHP_IxpCallbacks_remove_marshal,
-		.freefid	= PHP_IxpCallbacks_freefid_marshal,
-	}
+		.freefid	= PHP_IxpCallbacks_freefid_marshal
+	};
 
 	_this_zval = getThis();
 	_this_ce = Z_OBJCE_P(_this_zval);
@@ -1361,62 +1370,10 @@ PHP_METHOD(IxpServer, __construct)
 		RETURN_FALSE;
 	}
 
-	if (IxpServerCallbacks == NULL) {
-		conn = ixp_listen(&this_server, sock, &this_srv, nil, nil);
-	} else {
-		conn = ixp_listen(&this_server, sock, &this_srv, PHP_IxpServerCallbacks_read_marshal, PHP_IxpServerCallbacks_close_marshal);
-	}
-
+	conn = ixp_listen(&this_server, sock, &this_srv, nil, nil);
 	object->ptr = &this_server;
 }
 /* }}} __construct */
-
-/* {{{ proto void manual(string address[, zval lAux[, zval IxpServerAux[, object IxpServerCallbacks]) */
-PHP_METHOD(IxpServer, manual)
-{
-	zend_class_entry * _this_ce;
-	zval * _this_zval;
-	IxpConn *conn;
-
-	char * address = NULL;
-	int address_len = 0;
-	int sock;
-
-	zval * lAux = NULL;
-	zval * IxpServerAux = NULL;
-	zval * IxpServerCallbacks = NULL;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z!z!O", &address, &address_len, &lAux, &IxpServerAux, &IxpServerCallbacks, IxpServerCallbacks_ce_ptr) == FAILURE) { 
-		return;
-	}
-
-	PHP_IxpServerAux this_server_aux = {
-		.aux		= IxpServerAux,
-		.callbacks	= IxpServerCallbacks,
-		.is_9srv	= 0
-	}
-
-	IxpServer this_server = {
-		.aux		= &this_server_aux
-	}
-
-	sock = ixp_announce(address);
-	if (sock < 0) {
-		php_error(E_WARNING, ixp_errbuf());
-		RETURN_FALSE;
-	}
-
-	if (IxpServerCallbacks == NULL) {
-		conn = ixp_listen(&this_server, sock, lAux, nil, nil);
-	} else {
-		conn = ixp_listen(&this_server, sock, lAux, PHP_IxpServerCallbacks_read_marshal, PHP_IxpServerCallbacks_close_marshal);
-	}
-
-	object_instantiate(IxpServer_ce_ptr, return_value);
-	PHP_IxpServer *object = FETCH_IxpServer(return_value);
-	object->ptr = &this_server;
-}
-/* }}} manual */
 
 /* {{{ proto void start() */
 PHP_METHOD(IxpServer, start)
@@ -1454,7 +1411,6 @@ PHP_METHOD(IxpServer, stop)
 
 static zend_function_entry IxpServer_methods[] = {
 	PHP_ME(IxpServer, __construct, IxpServer____construct_args, ZEND_ACC_PUBLIC)
-	PHP_ME(IxpServer, manual, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(IxpServer, start, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpServer, stop, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
