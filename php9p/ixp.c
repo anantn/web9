@@ -74,6 +74,22 @@ PHP_MINIT_FUNCTION(ixp)
 	REGISTER_LONG_CONSTANT("IXP_OLOCK", P9_OLOCK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("IXP_OAPPEND", P9_OREAD, CONST_CS | CONST_PERSISTENT);
 
+	REGISTER_LONG_CONSTANT("IXP_DMEXEC", P9_DMEXEC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_DMWRITE", P9_DMWRITE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IXP_DMREAD", P9_DMREAD, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMDIR", P9_DMDIR, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMAPPEND", P9_DMAPPEND, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMEXCL", P9_DMEXCL, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMMOUNT", P9_DMMOUNT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMAUTH", P9_DMAUTH, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMTMP", P9_DMTMP, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMSYMLINK", P9_DMSYMLINK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMDEVICE", P9_DMDEVICE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMNAMEDPIPE", P9_DMNAMEDPIPE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMSOCKET", P9_DMSOCKET, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMSETUID", P9_DMSETUID, CONST_CS | CONST_PERSISTENT);
+	REGISTER_DOUBLE_CONSTANT("IXP_DMSETGID", P9_DMSETGID, CONST_CS | CONST_PERSISTENT);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -121,7 +137,7 @@ static void PHP_IxpCFid_initialize(zval *obj, IxpCFid *from)
 	*/
 
 	PROP_SET_LONG(fid, from->fid);
-	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_DOUBLE(mode, from->mode);
 	PROP_SET_LONG(open, from->open);
 	PROP_SET_LONG(iounit, from->iounit);
 	PROP_SET_LONG(offset, from->iounit);
@@ -144,7 +160,7 @@ static void PHP_IxpStat_initialize(zval *obj, IxpStat *from)
 
 	PROP_SET_LONG(type, from->type);
 	PROP_SET_LONG(device, from->dev);
-	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_DOUBLE(mode, from->mode);
 	PROP_SET_LONG(aTime, from->atime);
 	PROP_SET_LONG(mTime, from->length);
 	PROP_SET_STRING(name, from->name);
@@ -524,7 +540,7 @@ static void PHP_IxpCFid_object_free(void *object TSRMLS_DC)
 	zend_hash_destroy(intern->obj.properties);
 	FREE_HASHTABLE(intern->obj.properties);
 
-	efree(object);
+	//efree(object);
 }
 
 static zend_object_value PHP_IxpCFid_object_new_ex(zend_class_entry *class_type, PHP_IxpCFid **object TSRMLS_DC)
@@ -553,30 +569,39 @@ static zend_object_value PHP_IxpCFid_object_new(zend_class_entry *class_type TSR
 	return PHP_IxpCFid_object_new_ex(class_type, &tmp TSRMLS_DC);
 }
 
-/* {{{ proto string read(int count) */
+/* {{{ proto string read(int count[, int offset]) */
 PHP_METHOD(IxpCFid, read)
 {
 	zend_class_entry * _this_ce;
 	zval * _this_zval = NULL;
-	long count = 0;
+	long count = 0, offset = 0;
+	int recvd;
 	char *buf;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Ol", &_this_zval, IxpCFid_ce_ptr, &count) == FAILURE) {
+	php_stream *output;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Ol|l", &_this_zval, IxpCFid_ce_ptr, &count, &offset) == FAILURE) {
 		return;
 	}
 
 	_this_ce = Z_OBJCE_P(_this_zval);
 	PHP_IxpCFid *object = FETCH_IxpCFid(_this_zval);
 
-	buf = emalloc(count);
+	buf = ixp_emalloc(count);
+	if (offset == 0) {
+		recvd = ixp_read(object->ptr, buf, count);
+	} else {
+		recvd = ixp_pread(object->ptr, buf, count, offset);
+	}
 
-	if (ixp_read(object->ptr, buf, count) == -1) {
-		php_error(E_WARNING, ixp_errbuf());
+	if (recvd <= 0) {
+		if (recvd < 0)
+			php_error(E_WARNING, ixp_errbuf());
 		RETURN_FALSE;
 	}
 
-	RETVAL_STRING(buf, 1);
-	efree(buf);
+	RETVAL_STRINGL(buf, count, 1);
+	free(buf);
 }
 /* }}} read */
 

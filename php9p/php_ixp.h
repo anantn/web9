@@ -122,6 +122,13 @@ PHP_METHOD(IxpCFid, close);
 ZEND_BEGIN_ARG_INFO(IxpCFid__close_args, 0)
 ZEND_END_ARG_INFO()
 
+/* IxpMessage */
+PHP_METHOD(IxpMessage, __construct);
+ZEND_BEGIN_ARG_INFO(IxpMessage____construct_args, 0)
+  ZEND_ARG_INFO(0, data)
+  ZEND_ARG_INFO(0, type)
+ZEND_END_ARG_INFO()
+
 /* IxpConn */
 PHP_METHOD(IxpConn, serve);
 ZEND_BEGIN_ARG_INFO(IxpConn__serve_args, 0)
@@ -246,6 +253,12 @@ struct _PHP_IxpQid {
 	IxpQid *ptr;
 };
 
+typedef struct _PHP_IxpMessage PHP_IxpMessage;
+struct _PHP_IxpMessage {
+	zend_object obj;
+	IxpMsg *ptr;
+};
+
 typedef struct _PHP_IxpConn PHP_IxpConn;
 struct _PHP_IxpConn {
 	zend_object obj;
@@ -281,6 +294,7 @@ struct _PHP_IxpServer {
 #define FETCH_IxpCFid(zval_p) (PHP_IxpCFid*)zend_objects_get_address(zval_p TSRMLS_CC)
 #define FETCH_IxpStat(zval_p) (PHP_IxpStat*)zend_objects_get_address(zval_p TSRMLS_CC)
 #define FETCH_IxpQid(zval_p) (PHP_IxpQid*)zend_objects_get_address(zval_p TSRMLS_CC)
+#define FETCH_IxpMessage(zval_p) (PHP_IxpMessage*)zend_objects_get_address(zval_p TSRMLS_CC)
 #define FETCH_IxpConn(zval_p) (PHP_IxpConn*)zend_objects_get_address(zval_p TSRMLS_CC)
 #define FETCH_IxpFid(zval_p) (PHP_IxpFid*)zend_objects_get_address(zval_p TSRMLS_CC)
 #define FETCH_IxpRequest(zval_p) (PHP_IxpRequest*)zend_objects_get_address(zval_p TSRMLS_CC)
@@ -295,6 +309,7 @@ static void class_init_IxpClient(void);
 static void class_init_IxpCFid(void);
 static void class_init_IxpStat(void);
 static void class_init_IxpQid(void);
+static void class_init_IxpMessage(void);
 static void class_init_IxpConn(void);
 static void class_init_IxpFid(void);
 static void class_init_IxpRequest(void);
