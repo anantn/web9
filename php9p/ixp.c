@@ -114,9 +114,11 @@ static void PHP_IxpCFid_initialize(zval *obj, IxpCFid *from)
 	PHP_IxpCFid *cfid = FETCH_IxpCFid(_this_zval);
 	cfid->ptr = from;
 
+	/*
 	object_instantiate(IxpQid_ce_ptr, ret);
 	PHP_IxpQid_initialize(ret, from->qid);
 	add_property_zval_ex(_this_zval, "qid", 4, ret);
+	*/
 
 	PROP_SET_LONG(fid, from->fid);
 	PROP_SET_LONG(mode, from->mode);
@@ -133,10 +135,12 @@ static void PHP_IxpStat_initialize(zval *obj, IxpStat *from)
 
 	PHP_IxpStat *stat = FETCH_IxpStat(_this_zval);
 	stat->ptr = from;
-
+	
+	/*
 	object_instantiate(IxpQid_ce_ptr, ret);
 	PHP_IxpQid_initialize(ret, from->qid);
 	add_property_zval_ex(_this_zval, "qid", 4, ret);
+	*/
 
 	PROP_SET_LONG(type, from->type);
 	PROP_SET_LONG(device, from->dev);
@@ -305,8 +309,6 @@ static void PHP_IxpClient_object_free(void *object TSRMLS_DC)
 
 	zend_hash_destroy(intern->obj.properties);
 	FREE_HASHTABLE(intern->obj.properties);
-
-	efree(object);
 }
 
 static zend_object_value PHP_IxpClient_object_new_ex(zend_class_entry *class_type, PHP_IxpClient **object TSRMLS_DC)
@@ -669,11 +671,10 @@ static zend_object_handlers PHP_IxpStat_handlers;
 static void PHP_IxpStat_object_free(void *object TSRMLS_DC)
 {
 	PHP_IxpStat *intern = (PHP_IxpStat *)object;
-
+	
+	ixp_freestat(intern->ptr);
 	zend_hash_destroy(intern->obj.properties);
 	FREE_HASHTABLE(intern->obj.properties);
-
-	efree(object);
 }
 
 static zend_object_value PHP_IxpStat_object_new_ex(zend_class_entry *class_type, PHP_IxpStat **object TSRMLS_DC)
@@ -702,7 +703,26 @@ static zend_object_value PHP_IxpStat_object_new(zend_class_entry *class_type TSR
 	return PHP_IxpStat_object_new_ex(class_type, &tmp TSRMLS_DC);
 }
 
+PHP_METHOD(IxpStat, getQid)
+{
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
+	int ret;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpStat_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpStat *object = FETCH_IxpStat(_this_zval);
+
+	object_instantiate(IxpQid_ce_ptr, return_value);
+	PHP_IxpQid_initialize(return_value, object->ptr->qid);
+}
+
+
 static zend_function_entry IxpStat_methods[] = {
+	PHP_ME(IxpStat, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -769,8 +789,6 @@ static void PHP_IxpQid_object_free(void *object TSRMLS_DC)
 
 	zend_hash_destroy(intern->obj.properties);
 	FREE_HASHTABLE(intern->obj.properties);
-
-	efree(object);
 }
 
 static zend_object_value PHP_IxpQid_object_new_ex(zend_class_entry *class_type, PHP_IxpQid **object TSRMLS_DC)
