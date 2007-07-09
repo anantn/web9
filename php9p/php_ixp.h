@@ -133,8 +133,16 @@ ZEND_BEGIN_ARG_INFO(IxpCFid__close_args, 0)
 ZEND_END_ARG_INFO()
 
 /* IxpStat */
-PHP_METHOD(IxpFcall, getQid);
+PHP_METHOD(IxpStat, getQid);
 ZEND_BEGIN_ARG_INFO(IxpStat__getQid_args, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(IxpStat, getMode);
+ZEND_BEGIN_ARG_INFO(IxpStat__getMode_args, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(IxpStat, getTime);
+ZEND_BEGIN_ARG_INFO(IxpStat__getTime_args, 0)
 ZEND_END_ARG_INFO()
 
 /* IxpConn */

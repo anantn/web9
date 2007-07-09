@@ -820,8 +820,70 @@ PHP_METHOD(IxpStat, getQid)
 }
 /* }}} getQid */
 
+static void
+setrwx(long m, char *s) {
+	static char *modes[] = {
+		"---", "--x", "-w-",
+		"-wx", "r--", "r-x",
+		"rw-", "rwx",
+	};
+	strncpy(s, modes[m], 3);
+}
+
+/* {{{ proto object getMode() */
+PHP_METHOD(IxpStat, getMode)
+{
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
+	static char buf[16];
+	int ret;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpStat_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpStat *object = FETCH_IxpStat(_this_zval);
+
+	buf[0] = '-';
+	if (object->ptr->mode & P9_DMDIR)
+		buf[0] = 'd';
+	buf[1] = '-';
+	setrwx((object->ptr->mode >> 6) & 7, &buf[2]);
+	setrwx((object->ptr->mode >> 3) & 7, &buf[5]);
+	setrwx((object->ptr->mode >> 0) & 7, &buf[8]);
+	buf[11] = 0;
+
+	RETVAL_STRING(buf, 1);
+}
+/* }}} getMode */
+
+/* {{{ proto object getTime() */
+PHP_METHOD(IxpStat, getTime)
+{
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
+	static char buf[32];
+	int ret;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpStat_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpStat *object = FETCH_IxpStat(_this_zval);
+
+	ctime_r((time_t*)&object->ptr->mtime, buf);
+	buf[strlen(buf) - 1] = '\0';
+
+	RETVAL_STRING(buf, 1);
+}
+/* }}} getTime */
+
 static zend_function_entry IxpStat_methods[] = {
 	PHP_ME(IxpStat, getQid, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpStat, getMode, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpStat, getTime, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 

@@ -2,7 +2,7 @@
 
 function usage()
 {
-	echo "usage: php ixpc.php <address> {read | write | create | remove | ls} <file>\n";
+	echo "usage: php ixpc.php <address> {read | ls} <file>\n";
 	exit;
 }
 
@@ -12,12 +12,13 @@ function ls($client, $addr, $file)
 	$names = array();
 
 	foreach ($stats as $stat) {
-		$names[] = $stat->name;
+		$mode = $stat->getMode();
+		$time = $stat->getTime();
+		$names[$stat->name] = $mode."\t".$stat->uid."\t".$stat->gid."\t".$time;
 	}
-	sort($names);
-
-	foreach ($names as $name)
-		echo $name . "\n";
+	ksort($names);
+	foreach ($names as $name=>$det)
+		echo $det."\t".$name."\n";
 }
 
 function read($client, $addr, $file)
@@ -27,7 +28,7 @@ function read($client, $addr, $file)
 		echo $buf;
 }
 
-if ($argc != 4) {
+if (($argc != 4)) {
 	usage();
 }
 
