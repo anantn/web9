@@ -654,7 +654,7 @@ PHP_METHOD(IxpCFid, read)
 		RETURN_FALSE;
 	}
 
-	RETVAL_STRINGL(buf, count, 1);
+	RETVAL_STRINGL(buf, recvd, 1);
 	free(buf);
 }
 /* }}} read */
