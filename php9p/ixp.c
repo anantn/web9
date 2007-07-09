@@ -641,6 +641,7 @@ PHP_METHOD(IxpCFid, read)
 	PHP_IxpCFid *object = FETCH_IxpCFid(_this_zval);
 
 	buf = ixp_emalloc(count);
+	memset(buf, '\0', count);
 	if (offset == 0) {
 		recvd = ixp_read(object->ptr, buf, count);
 	} else {

@@ -2,15 +2,22 @@
 
 function usage()
 {
-	echo "usage: php ixpc.php <address> {read | write | remove} <file>\n";
+	echo "usage: php ixpc.php <address> {read | write | create | remove | ls} <file>\n";
 	exit;
 }
 
 function ls($client, $addr, $file)
 {
-	$stat = $client->stat($file);
-	var_dump($stat);
-	var_dump(IXP_DMDIR);
+	$stats = $client->statDir($file);
+	$names = array();
+
+	foreach ($stats as $stat) {
+		$names[] = $stat->name;
+	}
+	sort($names);
+
+	foreach ($names as $name)
+		echo $name . "\n";
 }
 
 function read($client, $addr, $file)
