@@ -162,6 +162,41 @@ static void PHP_IxpFid_initialize(zval *obj, IxpFid *from)
 	PROP_SET_DOUBLE(omode, from->omode);
 }
 
+static void PHP_IxpFcall_initialize(zval *obj, IxpFcall *from)
+{
+	zval *ret;
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpFcall *fcall = FETCH_IxpFcall(_this_zval);
+	fcall->ptr = from;
+
+	PROP_SET_LONG(type, from->type);
+	PROP_SET_LONG(tag, from->tag);
+	PROP_SET_LONG(fid, from->fid);
+	PROP_SET_LONG(msize, from->msize);
+	PROP_SET_STRING(version, from->version);
+	PROP_SET_LONG(oldtag, from->oldtag);
+	PROP_SET_STRING(ename, from->ename);
+	PROP_SET_LONG(iounit, from->iounit);
+	PROP_SET_LONG(afid, from->afid);
+	PROP_SET_STRING(uname, from->uname);
+	PROP_SET_STRING(aname, from->aname);
+	PROP_SET_LONG(perm, from->perm);
+	PROP_SET_STRING(name,from->name);
+	PROP_SET_LONG(mode, from->mode);
+	PROP_SET_LONG(newfid, from->newfid);
+	PROP_SET_LONG(nwname, from->nwname);
+	PROP_SET_STRING(wname, (char *)from->wname);
+	PROP_SET_LONG(nwqid, from->nwqid);
+	PROP_SET_DOUBLE(offset, from->offset);
+	PROP_SET_LONG(count, from->count);
+	PROP_SET_STRING(data, from->data);
+	PROP_SET_LONG(nstat, from->nstat);
+	PROP_SET_STRING(stat, (char *)from->stat);
+}
+
+
 /* }}} helper functions */
 
 
@@ -1576,7 +1611,7 @@ static void class_init_IxpFcall(void)
 		"nwqid", 5, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 
-	zend_declare_property_long(IxpFcall_ce_ptr, 
+	zend_declare_property_double(IxpFcall_ce_ptr, 
 		"offset", 6, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 
