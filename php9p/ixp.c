@@ -138,6 +138,30 @@ static void PHP_IxpConn_initialize(zval *obj, IxpConn *from)
 
 	PROP_SET_LONG(closed, from->closed);
 }
+
+static void PHP_IxpRequest_initialize(zval *obj, Ixp9Req *from)
+{
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpRequest *req = FETCH_IxpRequest(_this_zval);
+	req->ptr = from;
+}
+
+static void PHP_IxpFid_initialize(zval *obj, IxpFid *from)
+{
+	zval *ret;
+	zend_class_entry *_this_ce = Z_OBJCE_P(obj);
+	zval *_this_zval = obj;
+
+	PHP_IxpFid *fid = FETCH_IxpFid(_this_zval);
+	fid->ptr = from;
+
+	PROP_SET_STRING(uid, from->uid);
+	PROP_SET_LONG(fid, from->fid);
+	PROP_SET_DOUBLE(omode, from->omode);
+}
+
 /* }}} helper functions */
 
 
@@ -176,7 +200,12 @@ static void PHP_IxpServerCallbacks_close_marshal(IxpConn *conn)
 
 static void PHP_IxpCallbacks_attach_marshal(Ixp9Req *req)
 {
+	Ixp9Srv *srv;
+	srv = req->srv;
 
+	zval *cb, *ret, *args[1], retval, funcname;
+	ZVAL_STRING(&funcname, "attach", 0);
+	cb = srv->aux;	
 }
 
 static void PHP_IxpCallbacks_clunk_marshal(Ixp9Req *req)
@@ -1215,7 +1244,27 @@ static zend_object_value PHP_IxpFid_object_new(zend_class_entry *class_type TSRM
 	return PHP_IxpFid_object_new_ex(class_type, &tmp TSRMLS_DC);
 }
 
+/* {{{ proto object getQid() */
+PHP_METHOD(IxpFid, getQid)
+{
+	zend_class_entry * _this_ce;
+	zval * _this_zval = NULL;
+	int ret;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &_this_zval, IxpFid_ce_ptr) == FAILURE) {
+		return;
+	}
+
+	_this_ce = Z_OBJCE_P(_this_zval);
+	PHP_IxpFid *object = FETCH_IxpFid(_this_zval);
+
+	object_instantiate(IxpQid_ce_ptr, return_value);
+	PHP_IxpQid_initialize(return_value, object->ptr->qid);
+}
+/* }}} getQid */
+
 static zend_function_entry IxpFid_methods[] = {
+	PHP_ME(IxpFid, getQid, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -1229,10 +1278,6 @@ static void class_init_IxpFid(void)
 	memcpy(&PHP_IxpFid_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	PHP_IxpFid_handlers.clone_obj = NULL;
 
-	zend_declare_property_null(IxpFid_ce_ptr, 
-		"qid", 3, 
-		ZEND_ACC_PUBLIC TSRMLS_DC);
-
 	zend_declare_property_string(IxpFid_ce_ptr, 
 		"uid", 3, "", 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
@@ -1241,7 +1286,7 @@ static void class_init_IxpFid(void)
 		"fid", 3, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 
-	zend_declare_property_long(IxpFid_ce_ptr, 
+	zend_declare_property_double(IxpFid_ce_ptr, 
 		"omode", 5, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
 }

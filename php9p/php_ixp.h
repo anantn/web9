@@ -160,6 +160,11 @@ ZEND_BEGIN_ARG_INFO(IxpRequest__respond_args, 0)
   ZEND_ARG_INFO(0, error)
 ZEND_END_ARG_INFO()
 
+/* IxpFid */
+PHP_METHOD(IxpFid, getQid);
+ZEND_BEGIN_ARG_INFO(IxpFid__getQid_args, 0)
+ZEND_END_ARG_INFO()
+
 /* IxpFcall */
 PHP_METHOD(IxpFcall, getQid);
 ZEND_BEGIN_ARG_INFO(IxpFcall__getQid_args, 0)
