@@ -61,35 +61,6 @@ PHP_MINIT_FUNCTION(ixp)
 	REGISTER_LONG_CONSTANT("IXP_NOTAG", IXP_NOTAG, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("IXP_NOFID", IXP_NOFID, CONST_CS | CONST_PERSISTENT);
 
-	REGISTER_LONG_CONSTANT("IXP_OREAD", P9_OREAD, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OWRITE", P9_OWRITE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_ORDWR", P9_ORDWR, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OEXEC", P9_OEXEC, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OTRUNC", P9_OTRUNC, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OCEXEC", P9_OCEXEC, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_ORCLOSE", P9_ORCLOSE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_ODIRECT", P9_ODIRECT, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_ONONBLOCK", P9_ONONBLOCK, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OEXCL", P9_OEXCL, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OLOCK", P9_OLOCK, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_OAPPEND", P9_OREAD, CONST_CS | CONST_PERSISTENT);
-
-	REGISTER_LONG_CONSTANT("IXP_DMEXEC", P9_DMEXEC, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_DMWRITE", P9_DMWRITE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("IXP_DMREAD", P9_DMREAD, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMDIR", P9_DMDIR, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMAPPEND", P9_DMAPPEND, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMEXCL", P9_DMEXCL, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMMOUNT", P9_DMMOUNT, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMAUTH", P9_DMAUTH, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMTMP", P9_DMTMP, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMSYMLINK", P9_DMSYMLINK, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMDEVICE", P9_DMDEVICE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMNAMEDPIPE", P9_DMNAMEDPIPE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMSOCKET", P9_DMSOCKET, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMSETUID", P9_DMSETUID, CONST_CS | CONST_PERSISTENT);
-	REGISTER_DOUBLE_CONSTANT("IXP_DMSETGID", P9_DMSETGID, CONST_CS | CONST_PERSISTENT);
-
 	return SUCCESS;
 }
 /* }}} */
@@ -486,6 +457,62 @@ PHP_METHOD(IxpClient, stat)
 }
 /* }}} stat */
 
+/* {{{ proto object statDir(string path) */
+PHP_METHOD(IxpClient, statDir)
+{
+	IxpStat *stat;
+	IxpCFid *cfid;
+	IxpMsg m;
+	zval *objects;
+
+	char * path = NULL;
+	uchar * buf;
+	int path_len = 0, nstat, mstat, count, i;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) {
+		return;
+	}
+
+	PHP_IxpClient *object = FETCH_IxpClient(this_ptr);
+
+	cfid = ixp_open(object->ptr, path, P9_OREAD);
+	if (cfid == nil) {
+		php_error(E_WARNING, ixp_errbuf());
+		RETURN_FALSE;
+	}
+
+	if (cfid->qid.type&P9_QTDIR != 0) {
+		php_error(E_WARNING, "Given path %s is not a directory!", &path);
+		RETURN_FALSE;
+	}
+
+	nstat = 0;
+	mstat = 16;
+	stat = emalloc(sizeof(*stat) * mstat);
+	buf = emalloc(cfid->iounit);
+
+	while((count = ixp_read(cfid, buf, cfid->iounit)) > 0) {
+		m = ixp_message(buf, count, MsgUnpack);
+		while(m.pos < m.end) {
+			if(nstat == mstat) {
+				mstat <<= 1;
+				stat = ixp_erealloc(stat, sizeof(*stat) * mstat);
+			}
+			ixp_pstat(&m, &stat[nstat++]);
+		}
+	}
+
+	array_init(return_value);
+	objects = emalloc(sizeof(*objects) * nstat);
+	for (i = 0; i < nstat; i++) {
+		object_instantiate(IxpStat_ce_ptr, &objects[i] TSRMLS_CC);
+		PHP_IxpStat_initialize(&objects[i], &stat[i]);
+		add_next_index_zval(return_value, &objects[i]);
+		ixp_freestat(&stat[i]);
+	}
+}
+/* }}} stat */
+
 static zend_function_entry IxpClient_methods[] = {
 	PHP_ME(IxpClient, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpClient, unmount, NULL, ZEND_ACC_PUBLIC)
@@ -493,6 +520,7 @@ static zend_function_entry IxpClient_methods[] = {
 	PHP_ME(IxpClient, open, IxpClient__open_args, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpClient, remove, IxpClient__remove_args, ZEND_ACC_PUBLIC)
 	PHP_ME(IxpClient, stat, IxpClient__stat_args, ZEND_ACC_PUBLIC)
+	PHP_ME(IxpClient, statDir, IxpClient__statDir_args, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -512,6 +540,43 @@ static void class_init_IxpClient(void)
 	zend_declare_property_long(IxpClient_ce_ptr,
 			"lastFid", sizeof("lastFid")-1, 0,
 			ZEND_ACC_PUBLIC TSRMLS_CC);
+	
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OREAD", 5,
+			P9_OREAD TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OWRITE", 6,
+			P9_OWRITE TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"ORDWR", 5,
+			P9_ORDWR TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OEXEC", 5,
+			P9_OEXEC TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OTRUNC", 6,
+			P9_OTRUNC TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OCEXEC", 6,
+			P9_OCEXEC TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"ORCLOSE", 6,
+			P9_ORCLOSE TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"ODIRECT", 7,
+			P9_ODIRECT TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"ONONBLOCK", 9,
+			P9_ONONBLOCK TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OEXCL", 5,
+			P9_OEXCL TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OLOCK", 5,
+			P9_OLOCK TSRMLS_CC);
+	zend_declare_class_constant_long(IxpClient_ce_ptr,
+			"OAPPEND", 7,
+			P9_OAPPEND TSRMLS_CC);
 }
 
 /* }}} Class IxpClient */
@@ -808,6 +873,53 @@ static void class_init_IxpStat(void)
 	zend_declare_property_string(IxpStat_ce_ptr, 
 		"muid", 4, "", 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_class_constant_long(IxpStat_ce_ptr,
+			"DMEXEC", 6,
+			P9_DMEXEC TSRMLS_CC);
+	zend_declare_class_constant_long(IxpStat_ce_ptr,
+			"DMWRITE", 7,
+			P9_DMWRITE TSRMLS_CC);
+	zend_declare_class_constant_long(IxpStat_ce_ptr,
+			"DMREAD", 6,
+			P9_DMREAD TSRMLS_CC);
+
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMDIR", 5,
+			P9_DMDIR TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMAPPEND", 8, 
+			P9_DMAPPEND TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMEXCL", 6,
+			P9_DMEXCL TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMMOUNT", 7,
+			P9_DMMOUNT TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMAUTH", 6,
+			P9_DMAUTH TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMTMP", 5,
+			P9_DMTMP TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMSYMLINK", 9,
+			P9_DMSYMLINK TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMDEVICE", 8,
+		   	P9_DMDEVICE TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMNAMEDPIPE", 11,
+			P9_DMNAMEDPIPE TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMSOCKET", 8,
+			P9_DMSOCKET TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMSETUID", 8,
+			P9_DMSETUID TSRMLS_CC);
+	zend_declare_class_constant_double(IxpStat_ce_ptr,
+			"DMSETGID", 8,
+			P9_DMSETGID TSRMLS_CC);
 }
 /* }}} Class IxpStat */
 
@@ -867,14 +979,38 @@ static void class_init_IxpQid(void)
 	zend_declare_property_long(IxpQid_ce_ptr, 
 		"type", 4, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
 	zend_declare_property_long(IxpQid_ce_ptr, 
 		"version", 7, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
-
 	zend_declare_property_long(IxpQid_ce_ptr, 
 		"path", 4, 0, 
 		ZEND_ACC_PUBLIC TSRMLS_DC);
+
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTDIR", 5,
+			P9_QTDIR TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTAPPEND", 8,
+			P9_QTAPPEND TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTEXCL", 6,
+			P9_QTEXCL TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTMOUNT", 7,
+			P9_QTMOUNT TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTAUTH", 6,
+			P9_QTAUTH TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTTMP", 5,
+			P9_QTTMP TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTSYMLINK", 9,
+			P9_QTSYMLINK TSRMLS_CC);
+	zend_declare_class_constant_long(IxpQid_ce_ptr,
+			"QTFILE", 6,
+			P9_QTFILE TSRMLS_CC);
+
 }
 /* }}} Class IxpQid */
 

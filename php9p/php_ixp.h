@@ -107,6 +107,12 @@ ZEND_BEGIN_ARG_INFO(IxpClient__stat_args, 0)
   ZEND_ARG_INFO(0, path)
 ZEND_END_ARG_INFO()
 
+PHP_METHOD(IxpClient, statDir);
+ZEND_BEGIN_ARG_INFO(IxpClient__statDir_args, 0)
+  ZEND_ARG_INFO(0, path)
+ZEND_END_ARG_INFO()
+
+
 /* IxpCFid */
 PHP_METHOD(IxpCFid, read);
 ZEND_BEGIN_ARG_INFO(IxpCFid__read_args, 0)
