@@ -552,7 +552,7 @@ PHP_METHOD(IxpClient, statDir)
 
 	nstat = 0;
 	mstat = 16;
-	stat = emalloc(sizeof(*stat) * mstat);
+	stat = ixp_emalloc(sizeof(*stat) * mstat);
 	buf = emalloc(cfid->iounit);
 
 	while((count = ixp_read(cfid, buf, cfid->iounit)) > 0) {
@@ -574,6 +574,9 @@ PHP_METHOD(IxpClient, statDir)
 		add_next_index_zval(return_value, &objects[i]);
 		ixp_freestat(&stat[i]);
 	}
+	
+	free(stat);
+	efree(buf);
 }
 /* }}} stat */
 
