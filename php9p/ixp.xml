@@ -7,7 +7,7 @@
 		This extension offers you access to interfaces that
 		understand the 9P protocol.
 	</description>
-	<license>LGPL</license>
+	<license>MIT</license>
 	<maintainer>
 		<user>anant</user>
 		<name>Anant Narayanan</name>
