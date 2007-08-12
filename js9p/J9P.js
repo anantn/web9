@@ -1,4 +1,4 @@
-J9P = function() {
+JS9P = function() {
 
 	/* Message types with codes */
 	var messages = function() {
