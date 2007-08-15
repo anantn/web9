@@ -236,18 +236,21 @@ JS9P = function() {
 		buffer = [];
 		_enc1(messages[type]);
 		_enc2(tag);
-		fmt = messageFormats[messages[type]];
+		fmt = messageFormats[type];
 		var j = 0;
+
+		/* FIXME: 
+		 * How do I get the global object? 'this' doesn't seem to work 
+		 * Each case can actually fall through and call this["_enc" + fmt[i]]()
+		 */
 		for (var i = 0; i < fmt.length; i++) {
 			switch(fmt[i]) {
-				case "1":
-				case "2":
-				case "4":
-				case "8":
-				case "S":
-				case "Q":
-					this["_enc" + fmt[i]](args[j]); j++;
-					break;
+				case "1": _enc1(args[j]); break;
+				case "2": _enc2(args[j]); break;
+				case "4": _enc4(args[j]); break;
+				case "8": _enc8(args[j]); break;
+				case "S": _encS(args[j]); break;
+				case "Q": _encQ(args[j]); break;
 				case "{":
 					var k = i + 1;
 					var func = "";
@@ -255,13 +258,18 @@ JS9P = function() {
 						func += fmt[k];	
 						k++;
 					}
-					this["_enc" + func](args[j]);
-					i = k; j++;
+					switch(func) {
+						case "Twalk":	_encTwalk(args[j]); break;
+						case "Rwalk":	_encRwalk(args[j]); break;
+						case "Stat":	_encStat(args[j]); break;
+					}
+					i = k;
 					break;
 				default:
 					alert("Invalid format type!");
 					return false; break;
 			}
+			j++;
 		}
 
 		var len = 0;
