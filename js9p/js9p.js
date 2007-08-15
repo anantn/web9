@@ -34,9 +34,9 @@ JS9P.Base = function() {
 	var constants = function() {
 		var ret = {};
 
-		ret.version = "9P2000";
-		ret.notag = 0xffff;
-		ret.nofid = 0xffffffff;
+		ret.VERSION = "9P2000";
+		ret.NOTAG = 0xffff;
+		ret.NOFID = 0xffffffff;
 	
 		ret.MAX_VERSION = 32;
 		ret.MAX_MSG = 8192;

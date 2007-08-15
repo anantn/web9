@@ -15,7 +15,6 @@
 					postBody: body,
 					onSuccess: function(transport) {
 						var res = transport.responseText;
-						alert(res.length);
 						$('response').update(res);
 					},
 					onFailure: function() {

@@ -27,7 +27,7 @@ JS9P.XHR = function () {
 
 	return {
 		initialize: function() {
-			var msg = JS9P.Base.encodeMessage(1, "Tversion", [16*1024, JS9P.Base.constants["version"]]);
+			var msg = JS9P.Base.encodeMessage(JS9P.Base.constants["NOTAG"], "Tversion", [16*1024, JS9P.Base.constants["VERSION"]]);
 			return msg;
 		}
 	}
