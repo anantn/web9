@@ -32,49 +32,55 @@ JS9P.Base = function() {
 	var buffer = [];
 
 	/* Set the various 9P constants */
-	var version = "9P2000";
-	var notag = 0xffff;
-	var nofid = 0xffffffff;
+	var constants = function() {
+		var ret = {};
+
+		ret.version = "9P2000";
+		ret.notag = 0xffff;
+		ret.nofid = 0xffffffff;
 	
-	var MAX_VERSION = 32;
-	var MAX_MSG = 8192;
-	var MAX_ERROR = 128;
-	var MAX_CACHE = 32;
-	var MAX_FLEN = 128;
-	var MAX_ULEN = 32;
-	var MAX_WELEM = 16;
+		ret.MAX_VERSION = 32;
+		ret.MAX_MSG = 8192;
+		ret.MAX_ERROR = 128;
+		ret.MAX_CACHE = 32;
+		ret.MAX_FLEN = 128;
+		ret.MAX_ULEN = 32;
+		ret.MAX_WELEM = 16;
 
-	/* From libc.h in p9p */
-	var OREAD = 0;
-	var OWRITE = 1;
-	var ORDWR = 2;
-	var OEXEC = 3;
-	var OTRUNC = 16;
-	var OCEXEC = 32;
-	var ORCLOSE = 64;
-	var ODIRECT = 128;
-	var ONONBLOCK = 256;
-	var OEXCL = 0x1000;
-	var OLOCK = 0x2000;
-	var OAPPEND = 0x4000;
+		/* From libc.h in p9p */
+		ret.OREAD = 0;
+		ret.OWRITE = 1;
+		ret.ORDWR = 2;
+		ret.OEXEC = 3;
+		ret.OTRUNC = 16;
+		ret.OCEXEC = 32;
+		ret.ORCLOSE = 64;
+		ret.ODIRECT = 128;
+		ret.ONONBLOCK = 256;
+		ret.OEXCL = 0x1000;
+		ret.OLOCK = 0x2000;
+		ret.OAPPEND = 0x4000;
 
-	/* Bits for Qid */
-	var QTDIR = 0x80;
-	var QTAPPEND = 0x40;
-	var QTEXCL = 0x20;
-	var QTMOUNT = 0x10;
-	var QTAUTH = 0x08;
-	var QTTMP = 0x04;
-	var QTSYMLINK = 0x02;
-	var QTFILE = 0x00;
+		/* Bits for Qid */
+		ret.QTDIR = 0x80;
+		ret.QTAPPEND = 0x40;
+		ret.QTEXCL = 0x20;
+		ret.QTMOUNT = 0x10;
+		ret.QTAUTH = 0x08;
+		ret.QTTMP = 0x04;
+		ret.QTSYMLINK = 0x02;
+		ret.QTFILE = 0x00;
 
-	/* Bits for Dir */
-	var DMDIR = 0x80000000;
-	var DMAPPEND = 0x40000000;	
-	var DMEXCL = 0x20000000;	
-	var DMMOUNT = 0x10000000;
-	var DMAUTH = 0x08000000;	
-	var DMTMP = 0x04000000;
+		/* Bits for Dir */
+		ret.DMDIR = 0x80000000;
+		ret.DMAPPEND = 0x40000000;	
+		ret.DMEXCL = 0x20000000;	
+		ret.DMMOUNT = 0x10000000;
+		ret.DMAUTH = 0x08000000;	
+		ret.DMTMP = 0x04000000;
+
+		return ret;
+	}
 
 	/* Message types with codes */
 	var messages = function() {
