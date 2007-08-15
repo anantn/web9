@@ -41,3 +41,5 @@ switch($argv[2]) {
 }
 
 $client->unmount();
+
+?>

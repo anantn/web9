@@ -205,10 +205,12 @@ JS9P = function() {
 	}
 
 	// Do encoding on the basis of format string
-	function _encodeMessage(args) {
-		buffer = "";
-		fmt = messageFormats[args[0]];
-		var j = 1;
+	function _encodeMessage(tag, type, args) {
+		buffer = [];
+		_enc1(messages[type]);
+		_enc2(tag);
+		fmt = messageFormats[type];
+		var j = 0;
 		for (var i = 0; i < fmt.length; i++) {
 			switch(fmt[i]) {
 				case "1":
@@ -234,7 +236,16 @@ JS9P = function() {
 					return false; break;
 			}
 		}
-		return buffer;
+
+		var len = 0;
+		for (var i = 0; i < buffer.length; i++) {
+			len += buffer[i].length;
+		}
+		var tmp = buffer;
+		buffer = []
+		_enc4(len);
+
+		return (buffer.join("") + tmp.join(""));
 	}
 
 	return {
@@ -244,17 +255,15 @@ JS9P = function() {
 		setBuffer: function(buf) {
 			buffer = buf;
 		},
-		createMessage: function() {
-			var n = arguments.length;
-			if (_checkType(arguments[0])) {
-				return _encodeMessage(arguments);
+	
+		
+		createMessage: function(tag, type, args) {
+			if (_checkType(type)) {
+				return _encodeMessage(tag, type, args);
 			} else {
 				alert("Not a valid type");
 				return false;
-			}	
-		},
-		sendMessage: function() {
-					 
+			}
 		}
 	};
 
