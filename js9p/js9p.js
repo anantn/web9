@@ -19,11 +19,12 @@
    | TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     |
    | SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                |
    +-----------------------------------------------------------------------+
-   | Authors: Anant Narayanan <anant@kix.in>                               |
+   | (C) 2007, Anant Narayanan <anant@kix.in>                              |
    +-----------------------------------------------------------------------+
 */
 
-JS9P = function() {
+JS9P = {}
+JS9P.Base = function() {
 
 	/* Globals */
 	var _msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
@@ -291,7 +292,6 @@ JS9P = function() {
 			buffer = buf;
 		},
 	
-		
 		createMessage: function(tag, type, args) {
 			if (_checkType(type)) {
 				return _encodeMessage(tag, type, args);
