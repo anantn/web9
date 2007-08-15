@@ -6,12 +6,12 @@
    | without limitation the rights to use, copy, modify, merge, publish,   |
    | distribute, sublicense, and/or sell copies of the Software, and to    |
    | permit persons to whom the Software is furnished to do so, subject to |
-   | the following conditions:											   |
-   |																	   |
+   | the following conditions:                                             |
+   |                                                                       |
    | The above copyright notice and this permission notice shall be        |
    | included in all copies or substantial portions of the Software.	   |
-   |																	   |
-   | THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 	   |
+   |                                                                       |
+   | THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,	   |
    | EXPRESS OR	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    |
    | MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.|
    | IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  |
@@ -209,7 +209,7 @@ static void PHP_IxpServerCallbacks_read_marshal(IxpConn *conn)
 	if (srv->aux == NULL) {
 		serve_9pcon(conn);
 	} else {
-	   	zval *cb, *ret, *args[1], retval, funcname;
+		zval *cb, *ret, *args[1], retval, funcname;
 		ZVAL_STRING(&funcname, "read", 0);
 		cb = srv->aux;
 		object_instantiate(IxpConn_ce_ptr, ret);
@@ -224,7 +224,7 @@ static void PHP_IxpServerCallbacks_close_marshal(IxpConn *conn)
 	IxpServer *srv;
 	srv = conn->srv;
 	if (srv->aux != NULL) {
-	   	zval *cb, *ret, *args[1], retval, funcname;
+		zval *cb, *ret, *args[1], retval, funcname;
 		ZVAL_STRING(&funcname, "close", 0);
 		cb = srv->aux;
 		object_instantiate(IxpConn_ce_ptr, ret);
@@ -1038,7 +1038,7 @@ static void class_init_IxpStat(void)
 			P9_DMSYMLINK TSRMLS_CC);
 	zend_declare_class_constant_double(IxpStat_ce_ptr,
 			"DMDEVICE", 8,
-		   	P9_DMDEVICE TSRMLS_CC);
+			P9_DMDEVICE TSRMLS_CC);
 	zend_declare_class_constant_double(IxpStat_ce_ptr,
 			"DMNAMEDPIPE", 11,
 			P9_DMNAMEDPIPE TSRMLS_CC);
@@ -1669,7 +1669,7 @@ PHP_METHOD(IxpServer, __construct)
 
 	Ixp9Srv this_srv = {
 		.aux		= IxpCallbacks,
-		.open 		= PHP_IxpCallbacks_open_marshal,
+		.open		= PHP_IxpCallbacks_open_marshal,
 		.walk		= PHP_IxpCallbacks_walk_marshal,
 		.read		= PHP_IxpCallbacks_read_marshal,
 		.stat		= PHP_IxpCallbacks_stat_marshal,
