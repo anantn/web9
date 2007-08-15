@@ -173,12 +173,13 @@ JS9P.Base = function() {
 	}
 
 	/* Set some buffer to given data */
-	function _createBuffer(buf, data) {
-		buf = []
+	function _createBuffer(data) {
+		var buf = [];
 		if (data) {
 			var l = data.length;
 			for(var i = l; i; buf[l - i] = data.charCodeAt(--i));
 		}
+		return buf;
 	}
 
 	/* Read bits from given buffer */
@@ -269,8 +270,7 @@ JS9P.Base = function() {
 				return;
 		}
 
-		var tmp;
-		_createBuffer(tmp, data);
+		var tmp = _createBuffer(data);
 		dec = _readBits(tmp, 0, bits);
 		max = Math.pow(2, bits);
 
@@ -281,28 +281,37 @@ JS9P.Base = function() {
 		}
 	}
 
-	/* Set of methods to add message parts to the buffer
-	 * Inpired by py9p
-	 */
-
-	// Encode a 1 byte integer
+	/* Set of methods to encode/decode message parts to/from the buffer */
 	function _enc1(val) {
 		buffer[buffer.length] = _encodeInt(val, 1);
 	}
+	function _dec1(val, index) {
+		buffer[buffer.length] = _decodeInt(val.slice(index, index + 1), 1);
+		return index + 1;
+	}
 
-	// Encode a 2 byte integer
 	function _enc2(val) {
 		buffer[buffer.length] = _encodeInt(val, 2);
 	}
+	function _dec2(val) {
+		buffer[buffer.length] = _decodeInt(val.slice(index, index + 2), 2);
+		return index + 2;
+	}
 
-	// Encode a 4 byte integer
 	function _enc4(val) {
 		buffer[buffer.length] = _encodeInt(val, 4);
 	}
+	function _dec4(val, index) {
+		buffer[buffer.length] = _decodeInt(val.slice(index, index + 4), 4);
+		return index + 4;
+	}
 
-	// Encode a 8 byte integer
 	function _enc8(val) {
 		buffer[buffer.length] = _encodeInt(val, 8);
+	}
+	function _dec8(val, index) {
+		buffer[buffer.length] = _decodeInt(val.slice(index, index + 8), 8);
+		return index + 8;
 	}
 
 	// Encode a variable length string with 2 byte length
@@ -310,11 +319,21 @@ JS9P.Base = function() {
 		_enc2(val.length);
 		buffer[buffer.length] = val;
 	}
+	function _decS(val, index) {
+		var len = _decodeInt(val.slice(index, index + 2), 2);
+		buffer[buffer.length] = val.slice(index + 2, index + len + 2);
+		return index + len + 2;
+	}
 
 	// Encode a variable length string with 4 byte length
 	function _encD(val) {
 		_enc4(val.length);
 		buffer[buffer.length] = val;
+	}
+	function _decD(val, index) {
+		var len = _decodeInt(val.slice(index, index + 4), 4);
+		buffer[buffer.length] = val.slice(index + 4, index + len + 4);
+		return index + len + 4;
 	}
 
 	// Encode a QID (13bit). qid = [type, version, path]
@@ -322,6 +341,14 @@ JS9P.Base = function() {
 		_enc1(qid[0]);
 		_enc2(qid[1]);
 		_enc8(qid[2]);
+	}
+	function _decQ(val, index) {
+		var type = _decodeInt(val.slice(index, index + 1), 1);
+		var version = _decodeInt(val.slice(index + 1, index + 3), 2);
+		var path = _decodeInt(val.slice(index + 3, index + 11), 8);
+
+		buffer[buffer.length] = [type, version, path];
+		return index + 13;
 	}
 
 	// Encode a Twalk message. Argument is of the form: [fid, newfid, [name1, name2, ...]]
@@ -334,6 +361,20 @@ JS9P.Base = function() {
 			_encS(names[i]);
 		}
 	}
+	function _decTwalk(val, index) {
+		var fid = _decodeInt(val.slice(index, index + 4), 4);
+		var newfid = _decodeInt(val.slice(index + 4, index + 8), 8);
+
+		var len = _decodeInt(val.slice(index + 8, index + 10), 2);
+		var tindex = index + 10;
+		for (var i = 0; i < len; i++) {
+			tindex = _decS(val, tindex);
+		}
+
+		var names = buffer.splice(buffer.length - len - 1, len);
+		buffer[buffer.length] = [fid, newfid, names];
+		return tindex;
+	}
 
 	// Encode an Rwalk message. qids is an array of Qids. Each qid = [type, version, path]
 	function _encRwalk(qids) {
@@ -341,6 +382,17 @@ JS9P.Base = function() {
 		for (var i = 0; i < qids.length; i++) {
 			_encQ(qids[i]);
 		}
+	}
+	function _encTwalk(val, index) {
+		var len = _decodeInt(val.slice(index, index + 2), 2);
+		var tindex = index + 2;
+		for (var i = 0; i < len; i++) {
+			tindex = _decQ(val, tindex);
+		}
+
+		var qids = buffer.splice(buffer.length - len - 1, len);
+		buffer[buffer.length] = qids;
+		return tindex;
 	}
 
 	// Encode an stat message. 
@@ -361,6 +413,28 @@ JS9P.Base = function() {
 		_encS(val[9]);
 		_encS(val[10]);
 	}	
+	function _decStat(val, index) {
+		var size = _decodeInt(val.slice(index, index + 2), 2);
+		var type = _decodeInt(val.slice(index + 2, index + 4), 2);
+		var dev = _decodeInt(val.slice(index + 4, index + 8), 4);
+		index = _decQ(val, index + 8);
+		var mode = _decodeInt(val.slice(index, index + 4), 4);
+		var atime = _decodeInt(val.slice(index + 4, index + 8), 4);
+		var mtime = _decodeInt(val.slice(index + 8, index + 12), 4);
+		var length = _decodInt(val.slice(index + 12, index + 20), 8);
+		index = _decS(val, index + 20);
+		index = _decS(val, index);
+		index = _decS(val, index);
+		index = _decS(val, index);
+		var muid = buffer.splice(buffer.length - 1, 1);
+		var gid = buffer.splice(buffer.length - 1, 1);
+		var uid = buffer.splice(buffer.length - 1, 1);
+		var name = buffer.splice(buffer.length - 1, 1);
+		var qid = buffer.splice(buffer.length - 1, 1);
+		
+		buffer[buffer.length] = [type, dev, qid, mode, atime, mtime, len, name, uid, gid, muid];
+		return index;
+	}
 
 	// Check if message type is valid
 	function _checkType(type) {
@@ -390,6 +464,7 @@ JS9P.Base = function() {
 				case "4": _enc4(args[j]); break;
 				case "8": _enc8(args[j]); break;
 				case "S": _encS(args[j]); break;
+				case "D": _encD(args[j]); break;
 				case "Q": _encQ(args[j]); break;
 				case "{":
 					var k = i + 1;
@@ -418,17 +493,18 @@ JS9P.Base = function() {
 		}
 		var tmp = buffer;
 		buffer = []
-		_enc4(len);
+		_enc4(len + 4);
 
 		return _encode64(buffer.join("") + tmp.join(""));
 	}
 
 	// Decode a message
 	function _decodeMessage(msg) {
+		buffer = [];
 		var buf = _decode64(msg);
 		var size = _decodeInt(buf.slice(0, 4), 4);
 		if (size != buf.length) {
-			alert("decodeMessage: Invalid message size!");
+			alert("decodeMessage: Invalid message size! " + buf.length + " found, " + size + " expected.");
 			return false;
 		}
 		var type = _decodeInt(buf.slice(4, 5), 1);
@@ -436,21 +512,51 @@ JS9P.Base = function() {
 		var args = buf.slice(7);
 
 		var fmt = messageFormats[type];
-		for (var i = 0; i < fmt.length; i++) {
-			
+		for (var i = 0, j = 0; i < fmt.length; i++) {
+			switch(fmt[i]) {
+				case "1": j = _dec1(args, j); break;	
+				case "2": j = _dec2(args, j); break;
+				case "4": j = _dec4(args, j); break;
+				case "8": j = _dec8(args, j); break;
+				case "S": j = _decS(args, j); break;
+				case "D": j = _decD(args, j); break;
+				case "Q": j = _decQ(args, j); break;
+				case "{":
+					var k = i + 1;
+					var func = "";
+					while (fmt[k] != "}") {
+						func += fmt[k];	
+						k++;
+					}
+					switch(func) {
+						case "Twalk":	j = _decTwalk(args, j); break;
+						case "Rwalk":	j = _decRwalk(args, j); break;
+						case "Stat":	j = _decStat(args, j); break;
+					}
+					i = k;
+					break;
+				default:
+					alert("Invalid format type!");
+					return false; break;
+			}
 		}
+
+		return [type, tag, buffer];
 	}
 
 	return {
 		constants: constants,
 		msg: messageFormats,	
-		createMessage: function(tag, type, args) {
+		encodeMessage: function(tag, type, args) {
 			if (_checkType(type)) {
 				return _encodeMessage(tag, messages[type], args);
 			} else {
 				alert("Not a valid type");
 				return false;
 			}
+		},
+		decodeMessage: function(data) {
+			return _decodeMessage(data);
 		}
 	};
 
