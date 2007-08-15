@@ -27,8 +27,6 @@ JS9P = {}
 JS9P.Base = function() {
 
 	/* Globals */
-	var _msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
-					"create", "read", "write", "clunk", "remove", "stat", "wstat"];
 	var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	var buffer = [];
 
@@ -88,9 +86,11 @@ JS9P.Base = function() {
 		var ret = {};
 		var start = 100;
 
-		for (var i = 0; i < _msg.length; i++) {
-			ret["T"+_msg[i]] = start;
-			ret["R"+_msg[i]] = start + 1;
+		var msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
+					"create", "read", "write", "clunk", "remove", "stat", "wstat"];
+		for (var i = 0; i < msg.length; i++) {
+			ret["T"+msg[i]] = start;
+			ret["R"+msg[i]] = start + 1;
 			start += 2;
 		}
 		return ret;
@@ -104,11 +104,9 @@ JS9P.Base = function() {
 		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
 					"484", "D", "48D", "4", "4", "", "4", "", "4", "{Stat}", "4{Stat}", ""];
 
-		var j = 0;
-		for (var i = 0; i < _msg.length; i++) {
-			ret["T"+_msg[i]] = fmt[j];
-			ret["R"+_msg[i]] = fmt[j+1];
-			j += 2;
+		for (var i = 100, j = 0; (j < fmt.length - 1); i += 2, j += 2) {
+			ret[i] = fmt[j];
+			ret[i+1] = fmt[j+1];
 		}
 		return ret;
 	} ();
@@ -136,6 +134,39 @@ JS9P.Base = function() {
 			}
 
 			output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
+		} while (i < input.length);
+
+		return output;
+	}
+
+	function _decode64(input) {
+		var output = "";
+		var chr1, chr2, chr3;
+		var enc1, enc2, enc3, enc4;
+		var i = 0;
+
+		// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
+		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+   
+		do {
+			enc1 = keyStr.indexOf(input.charAt(i++));
+			enc2 = keyStr.indexOf(input.charAt(i++));
+			enc3 = keyStr.indexOf(input.charAt(i++));
+			enc4 = keyStr.indexOf(input.charAt(i++));
+      
+			chr1 = (enc1 << 2) | (enc2 >> 4);
+			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+			chr3 = ((enc3 & 3) << 6) | enc4;
+
+			output = output + String.fromCharCode(chr1);
+      
+			if (enc3 != 64) {
+				output = output + String.fromCharCode(chr2);
+			}
+
+			if (enc4 != 64) {
+				output = output + String.fromCharCode(chr3);
+			}
 		} while (i < input.length);
 
 		return output;
@@ -177,12 +208,12 @@ JS9P.Base = function() {
 		var diff = curByte - lastByte;
 
 		sum = ((buf[curByte] >> offsetRight) & ((1 << (diff ? 8 - offsetRight : length)) - 1));
-		if (diff && (offsetLeft = (start + length) % 8) {
+		if (diff && (offsetLeft = (start + length) % 8)) {
 			sum += (buf[lastByte++] & ((1 << offsetLeft) -1)) << (diff-- << 3) - offsetRight;
 		}
 
 		while (diff)
-			sum += shl(this.buffer[ lastByte++ ], (diff-- << 3) - offsetRight;
+			sum += shl(buf[lastByte++], (diff-- << 3) - offsetRight);
 
 		return sum;
 	}
@@ -343,7 +374,7 @@ JS9P.Base = function() {
 	// Do encoding on the basis of format string
 	function _encodeMessage(tag, type, args) {
 		buffer = [];
-		_enc1(messages[type]);
+		_enc1(type);
 		_enc2(tag);
 		fmt = messageFormats[type];
 		var j = 0;
@@ -392,12 +423,30 @@ JS9P.Base = function() {
 		return _encode64(buffer.join("") + tmp.join(""));
 	}
 
+	// Decode a message
+	function _decodeMessage(msg) {
+		var buf = _decode64(msg);
+		var size = _decodeInt(buf.slice(0, 4), 4);
+		if (size != buf.length) {
+			alert("decodeMessage: Invalid message size!");
+			return false;
+		}
+		var type = _decodeInt(buf.slice(4, 5), 1);
+		var tag = _decodeInt(buf.slice(5, 7), 2);
+		var args = buf.slice(7);
+
+		var fmt = messageFormats[type];
+		for (var i = 0; i < fmt.length; i++) {
+			
+		}
+	}
+
 	return {
 		constants: constants,
-	
+		msg: messageFormats,	
 		createMessage: function(tag, type, args) {
 			if (_checkType(type)) {
-				return _encodeMessage(tag, type, args);
+				return _encodeMessage(tag, messages[type], args);
 			} else {
 				alert("Not a valid type");
 				return false;
