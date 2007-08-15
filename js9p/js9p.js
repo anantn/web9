@@ -29,6 +29,7 @@ JS9P.Base = function() {
 	/* Globals */
 	var _msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
 					"create", "read", "write", "clunk", "remove", "stat", "wstat"];
+	var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	var buffer = [];
 
 	/* Set the various 9P constants */
@@ -80,7 +81,7 @@ JS9P.Base = function() {
 		ret.DMTMP = 0x04000000;
 
 		return ret;
-	}
+	} ();
 
 	/* Message types with codes */
 	var messages = function() {
@@ -112,6 +113,80 @@ JS9P.Base = function() {
 		return ret;
 	} ();
 
+	/* Base64 Encoding */
+	function _encode64(input) {
+		var output = "";
+		var chr1, chr2, chr3;
+		var enc1, enc2, enc3, enc4;var i = 0;
+		
+		do {
+			chr1 = input.charCodeAt(i++);
+			chr2 = input.charCodeAt(i++);
+			chr3 = input.charCodeAt(i++);
+			
+			enc1 = chr1 >> 2;
+			enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+			enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+			enc4 = chr3 & 63;
+
+			if (isNaN(chr2)) {
+				enc3 = enc4 = 64;
+			} else if (isNaN(chr3)) {
+				enc4 = 64;
+			}
+
+			output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
+		} while (i < input.length);
+
+		return output;
+	}
+
+	/* Set some buffer to given data */
+	function _createBuffer(buf, data) {
+		buf = []
+		if (data) {
+			var l = data.length;
+			for(var i = l; i; buf[l - i] = data.charCodeAt(--i));
+		}
+	}
+
+	/* Read bits from given buffer */
+	function _readBits(buf, start, length) {
+		
+		/* shl fix */
+		function shl(a, b){
+			for(++b; --b; a = ((a %= 0x7fffffff + 1) & 0x40000000) == 0x40000000 ? a * 2 : (a - 0x40000000) * 2 + 0x7fffffff + 1);
+			return a;
+		}
+
+		var givenBytes = -(start + length) >> 3;
+
+		if (start < 0 || length <= 0) {
+			alert("readBits::invalidArguments");
+			return 0;
+		}
+
+		if (buf.length < -(givenBytes)) {
+			alert("readBits::invalidDataArray");
+			return 0;
+		}
+
+		var offsetLeft, offsetRight = start % 8;
+		var curByte = buf.length - (start >> 3) - 1;
+		var lastByte = buf.length + givenBytes;
+		var diff = curByte - lastByte;
+
+		sum = ((buf[curByte] >> offsetRight) & ((1 << (diff ? 8 - offsetRight : length)) - 1));
+		if (diff && (offsetLeft = (start + length) % 8) {
+			sum += (buf[lastByte++] & ((1 << offsetLeft) -1)) << (diff-- << 3) - offsetRight;
+		}
+
+		while (diff)
+			sum += shl(this.buffer[ lastByte++ ], (diff-- << 3) - offsetRight;
+
+		return sum;
+	}
+
 	/* Encode an integer into 1, 2, 4 or 8 byte little-endian characters */
 	function _encodeInt(num, bytes) {
 		switch (bytes) {
@@ -127,7 +202,7 @@ JS9P.Base = function() {
 				return;
 		}
 
-    	var max = Math.pow(2, bits);
+		var max = Math.pow(2, bits);
 		var str = [];
 
 		if ((num >= max) || num < -(max >> 1)) {
@@ -135,18 +210,45 @@ JS9P.Base = function() {
 			return;
 		}
 
-	    if (num < 0) {
+		if (num < 0) {
 			num += max;
 		}
 
-    	while(num) {
+		while(num) {
 			str[str.length] = String.fromCharCode(num % 256);
 			num = Math.floor(num / 256);
 		}
-    	for(bits = -(-bits >> 3) - str.length; bits--; str[str.length] = "\0");
+		for(bits = -(-bits >> 3) - str.length; bits--; str[str.length] = "\0");
 
-	    return str.join("");
+		return str.join("");
 	};
+
+	/* Decode a 1, 2, 4 or 8 byte string into an integer */
+	function _decodeInt(data, bytes) {
+		switch (bytes) {
+			case 1:
+			case 2:
+			case 4:
+			case 8:
+				var bits = bytes * 8;
+				break;
+			default:
+				var bits = bytes * 8;
+				alert("encodeInt::invalidBytes");
+				return;
+		}
+
+		var tmp;
+		_createBuffer(tmp, data);
+		dec = _readBits(tmp, 0, bits);
+		max = Math.pow(2, bits);
+
+		if (dec >= max/2) {
+			return dec - max;
+		} else {
+			return dec;
+		}
+	}
 
 	/* Set of methods to add message parts to the buffer
 	 * Inpired by py9p
@@ -287,16 +389,11 @@ JS9P.Base = function() {
 		buffer = []
 		_enc4(len);
 
-		return (buffer.join("") + tmp.join(""));
+		return _encode64(buffer.join("") + tmp.join(""));
 	}
 
 	return {
-		getBuffer: function() {
-			return buffer;
-		},
-		setBuffer: function(buf) {
-			buffer = buf;
-		},
+		constants: constants,
 	
 		createMessage: function(tag, type, args) {
 			if (_checkType(type)) {
