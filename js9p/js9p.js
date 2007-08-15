@@ -25,34 +25,10 @@
 
 JS9P = function() {
 
-	/* Message types with codes */
-	var messages = function() {
-		var ret = {};
-		var start = 100;
-		var msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
+	/* Globals */
+	var _msg = ["version", "auth", "attach", "error", "flush", "walk", "open",
 					"create", "read", "write", "clunk", "remove", "stat", "wstat"];
-
-		for (var i = 0; i < msg.length; i++) {
-			ret["T"+msg[i]] = start;
-			ret["R"+msg[i]] = start + 1;
-			start += 2;
-		}
-		return ret;
-	} ();
-
-	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) 
-	 * Inspired by py9p.
-	 */
-	var messageFormats = function() {
-		var ret = {};
-		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
-					"484", "D", "48D", "4", "4", "", "4", "", "4", "{Stat}", "4{Stat}", ""];
-
-		for (var i = 0; i < messages.length; i++) {
-			ret[messages[i]] = fmt[i];
-		}
-		return ret;
-	} ();
+	var buffer = [];
 
 	/* Set the various 9P constants */
 	var version = "9P2000";
@@ -99,8 +75,35 @@ JS9P = function() {
 	var DMAUTH = 0x08000000;	
 	var DMTMP = 0x04000000;
 
-	/* The message buffer */
-	var buffer = [];
+	/* Message types with codes */
+	var messages = function() {
+		var ret = {};
+		var start = 100;
+
+		for (var i = 0; i < _msg.length; i++) {
+			ret["T"+_msg[i]] = start;
+			ret["R"+_msg[i]] = start + 1;
+			start += 2;
+		}
+		return ret;
+	} ();
+
+	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) 
+	 * Inspired by py9p.
+	 */
+	var messageFormats = function() {
+		var ret = {};
+		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
+					"484", "D", "48D", "4", "4", "", "4", "", "4", "{Stat}", "4{Stat}", ""];
+
+		var j = 0;
+		for (var i = 0; i < _msg.length; i++) {
+			ret["T"+_msg[i]] = fmt[j];
+			ret["R"+_msg[i]] = fmt[j+1];
+			j += 2;
+		}
+		return ret;
+	} ();
 
 	/* Encode an integer into 1, 2, 4 or 8 byte little-endian characters */
 	function _encodeInt(num, bytes) {
@@ -219,14 +222,13 @@ JS9P = function() {
 		_encS(val[10]);
 	}	
 
-	// Check if type is valid
+	// Check if message type is valid
 	function _checkType(type) {
-		for (var i = 0; i < messages.length; i++) {
-			if (type == messages[i]) {
-				return true;
-			}
+		if (messages[type]) {		
+			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
 
 	// Do encoding on the basis of format string
@@ -234,7 +236,7 @@ JS9P = function() {
 		buffer = [];
 		_enc1(messages[type]);
 		_enc2(tag);
-		fmt = messageFormats[type];
+		fmt = messageFormats[messages[type]];
 		var j = 0;
 		for (var i = 0; i < fmt.length; i++) {
 			switch(fmt[i]) {
