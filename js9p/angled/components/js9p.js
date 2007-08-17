@@ -569,7 +569,7 @@ JS9P.Base = function() {
 		decodeMessage: function(base, data) {
 			return _decodeMessage(base, data);
 		},
-		decodeRaw: _decodeInt,
+		decodeRaw: _decodeInt
 	};
 
 } ();
