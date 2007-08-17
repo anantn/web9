@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://angled/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://angled/locale/angled.dtd">
+<overlay id="angled-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="overlay.js"/>
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="angled-strings" src="chrome://angled/locale/angled.properties"/>
+  </stringbundleset>
+
+  <menupopup id="menu_ToolsPopup">
+    <menuitem id="angled-hello" label="&angled.label;" 
+              oncommand="angled.onMenuItemCommand(event);"/>
+  </menupopup>
+</overlay>
