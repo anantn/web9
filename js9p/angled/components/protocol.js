@@ -1,4 +1,3 @@
-
 const NINEP_SCHEME = "ninep"
 const NINEP_PROTOCOL_NAME = "The 9P File Protocol" 
 const NINEP_PROTOCOL_CONTRACTID = "@mozilla.org/network/protocol;1?name=ninep";
@@ -12,6 +11,18 @@ const nsISupports = Components.interfaces.nsISupports;
 const nsIIOService = Components.interfaces.nsIIOService;
 const nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
 const nsIURI = Components.interfaces.nsIURI;
+
+function AngledImport(obj) {
+	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/sockets.js", obj);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/js9p.js", obj);
+}
+AngledImport(this);
+
+function AngledLog(msg) {
+	var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+	consoleService.logStringMessage(msg);
+}
 
 function AngledProtocol() {
 
@@ -27,7 +38,7 @@ AngledProtocol.prototype =
 	},
 
 	scheme: NINEP_SCHEME,
-	defaultPort: -1,
+	defaultPort: 564,
 	protocolFlags: nsIProtocolHandler.URI_NORELATIVE | nsIProtocolHandler.URI_NOAUTH,
   
 	allowPort: function(port, scheme) {
@@ -42,10 +53,10 @@ AngledProtocol.prototype =
 
 	newChannel: function(aURI) {
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
-		dump("{angledURI}: " + angledURI + "\n");
 
+		var x = new Socket();
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
-		var uri = ios.newURI("http://localhost/", null, null);
+		var uri = ios.newURI("file:///Users/anant/Documents/Resumes/me/resume.html", null, null);
 		var chan = ios.newChannelFromURI(uri);
 		return chan;
 	}
