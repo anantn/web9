@@ -15,8 +15,8 @@ var nsIURI = Components.interfaces.nsIURI;
 
 function AngledImport(obj) {
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/sockets.js", obj);
 	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/js9p.js", obj);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/sockets.js", obj);
 }
 AngledImport(this);
 
