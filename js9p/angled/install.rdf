@@ -4,7 +4,8 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>angled@web9.kix.in</em:id>
     <em:name>Angled</em:name>
-    <em:version>0.1</em:version>
+	<em:version>0.1</em:version>
+	<em:type>2</em:type>
     <em:creator>Anant Narayanan</em:creator>
     <em:description>Access 9P Resources</em:description>
     <em:homepageURL>http://code.kix.in/projects/web9</em:homepageURL>
