@@ -446,7 +446,7 @@ JS9P.Base = function() {
 	}
 
 	// Do encoding on the basis of format string
-	function _encodeMessage(tag, type, args) {
+	function _encodeMessage(tag, type, base, args) {
 		buffer = [];
 		_enc1(type);
 		_enc2(tag);
@@ -495,13 +495,24 @@ JS9P.Base = function() {
 		buffer = []
 		_enc4(len + 4);
 
-		return _encode64(buffer.join("") + tmp.join(""));
+		var ret = buffer.join("") + tmp.join("")
+		if (base) {
+			ret = _encode64(ret);
+		}
+
+		return ret;
 	}
 
 	// Decode a message
-	function _decodeMessage(msg) {
+	function _decodeMessage(base, msg) {
 		buffer = [];
-		var buf = _decode64(msg);
+		var buf;
+		if (base) {
+			buf = _decode64(msg);
+		} else {
+			buf = msg;
+		}
+
 		var size = _decodeInt(buf.slice(0, 4), 4);
 		if (size != buf.length) {
 			alert("decodeMessage: Invalid message size! " + buf.length + " found, " + size + " expected.");
@@ -547,20 +558,18 @@ JS9P.Base = function() {
 	return {
 		constants: constants,
 		msg: messageFormats,	
-		encodeMessage: function(tag, type, args) {
+		encodeMessage: function(tag, type, base, args) {
 			if (_checkType(type)) {
-				return _encodeMessage(tag, messages[type], args);
+				return _encodeMessage(tag, messages[type], base, args);
 			} else {
 				alert("Not a valid type");
 				return false;
 			}
 		},
-		decodeMessage: function(data) {
-			return _decodeMessage(data);
+		decodeMessage: function(base, data) {
+			return _decodeMessage(base, data);
 		},
 		decodeRaw: _decodeInt,
-		encode64: _encode64,
-		decode64: _decode64
 	};
 
 } ();
