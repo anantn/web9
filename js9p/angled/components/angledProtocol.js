@@ -34,7 +34,7 @@ AngledProtocol.prototype =
 	},
 
 	newURI: function(spec, charset, baseURI) {
-		var uri = Components.classes[kSIMPLEURI_CONTRACTID].createInstance(nsIURI);
+		var uri = Components.classes[SIMPLEURI_CONTRACTID].createInstance(nsIURI);
 		uri.spec = spec;
 		return uri;
 	},
@@ -44,7 +44,9 @@ AngledProtocol.prototype =
 		dump("{angledURI}: " + angledURI + "\n");
 
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
-		return ios.newChannel("javascript:document.location.href='http://plan9.bell-labs.com/plan9/'", null, null);
+		var uri = ios.newURI("http://localhost/", null, null);
+		var chan = ios.newChannelFromURI(uri);
+		return chan;
 	},
 }
 
@@ -76,13 +78,13 @@ AngledModule.unregisterSelf = function(compMgr, fileSpec, location) {
 }
 
 AngledModule.getClassObject = function(compMgr, cid, iid) {
-	if (!cid.equals(kPROTOCOL_CID))
+	if (!cid.equals(NINEP_PROTOCOL_CID))
 		throw Components.results.NS_ERROR_NO_INTERFACE;
 
 	if (!iid.equals(Components.interfaces.nsIFactory))
 		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
     
-	return ProtocolFactory;
+	return AngledProtocolFactory;
 }
 
 AngledModule.canUnload = function(compMgr) {
