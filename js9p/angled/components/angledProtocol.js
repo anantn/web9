@@ -1,7 +1,7 @@
 
-const NINEP_SCHEME = "9p"
+const NINEP_SCHEME = "ninep"
 const NINEP_PROTOCOL_NAME = "The 9P File Protocol" 
-const NINEP_PROTOCOL_CONTRACTID = "@mozilla.org/network/protocol;1?name=9p";
+const NINEP_PROTOCOL_CONTRACTID = "@mozilla.org/network/protocol;1?name=ninep";
 const NINEP_PROTOCOL_CID = Components.ID("6F16F5C0-AAC0-4A43-A800-EA33354B8CCC");
 
 const SIMPLEURI_CONTRACTID = "@mozilla.org/network/simple-uri;1";
