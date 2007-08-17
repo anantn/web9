@@ -13,17 +13,19 @@ var nsIIOService = Components.interfaces.nsIIOService;
 var nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
 var nsIURI = Components.interfaces.nsIURI;
 
-function AngledImport(obj) {
-	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/js9p.js", obj);
-	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/sockets.js", obj);
-}
-AngledImport(this);
-
 function AngledLog(msg) {
 	var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
 	consoleService.logStringMessage(msg);
 }
+
+function AngledImport(obj) {
+	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/js9p.js", obj);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/sockets.js", obj);
+	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/angled.js", obj);
+}
+AngledImport(this);
+
 
 function AngledProtocol() {
 
@@ -54,6 +56,9 @@ AngledProtocol.prototype =
 
 	newChannel: function(aURI) {
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
+
+		var jObj = JS9P.Angled.initialize('localhost', 1564);
+		AngledLog(jObj);
 
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
 		var uri = ios.newURI("chrome://angled/content/angled.png", null, null);

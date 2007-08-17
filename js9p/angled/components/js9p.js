@@ -23,7 +23,7 @@
    +-----------------------------------------------------------------------+
 */
 
-JS9P = {};
+JS9P = {}
 JS9P.Base = function() {
 
 	/* Globals */
@@ -213,25 +213,25 @@ JS9P.Base = function() {
 			sum += (buf[lastByte++] & ((1 << offsetLeft) -1)) << (diff-- << 3) - offsetRight;
 		}
 
-		while (diff) {
+		while (diff)
 			sum += shl(buf[lastByte++], (diff-- << 3) - offsetRight);
-		}
 
 		return sum;
 	}
 
 	/* Encode an integer into 1, 2, 4 or 8 byte little-endian characters */
 	function _encodeInt(num, bytes) {
-		var bits = bytes * 8;
 		switch (bytes) {
 			case 1:
 			case 2:
 			case 4:
 			case 8:
+				var bits = bytes * 8;
 				break;
 			default:
+				var bits = bytes * 8;
 				alert("encodeInt::invalidBytes");
-				return; 
+				return;
 		}
 
 		var max = Math.pow(2, bits);
@@ -257,14 +257,15 @@ JS9P.Base = function() {
 
 	/* Decode a 1, 2, 4 or 8 byte string into an integer */
 	function _decodeInt(data, bytes) {
-		var bits = bytes * 8;
 		switch (bytes) {
 			case 1:
 			case 2:
 			case 4:
 			case 8:
+				var bits = bytes * 8;
 				break;
 			default:
+				var bits = bytes * 8;
 				alert("encodeInt::invalidBytes");
 				return;
 		}
@@ -382,7 +383,7 @@ JS9P.Base = function() {
 			_encQ(qids[i]);
 		}
 	}
-	function _decRwalk(val, index) {
+	function _encTwalk(val, index) {
 		var len = _decodeInt(val.slice(index, index + 2), 2);
 		var tindex = index + 2;
 		for (var i = 0; i < len; i++) {
@@ -481,17 +482,17 @@ JS9P.Base = function() {
 					break;
 				default:
 					alert("Invalid format type!");
-					return false; 
+					return false; break;
 			}
 			j++;
 		}
 
 		var len = 0;
-		for (i = 0; i < buffer.length; i++) {
+		for (var i = 0; i < buffer.length; i++) {
 			len += buffer[i].length;
 		}
 		var tmp = buffer;
-		buffer = [];
+		buffer = []
 		_enc4(len + 4);
 
 		return _encode64(buffer.join("") + tmp.join(""));
@@ -536,7 +537,7 @@ JS9P.Base = function() {
 					break;
 				default:
 					alert("Invalid format type!");
-					return false;
+					return false; break;
 			}
 		}
 
@@ -556,7 +557,10 @@ JS9P.Base = function() {
 		},
 		decodeMessage: function(data) {
 			return _decodeMessage(data);
-		}
+		},
+		decodeRaw: _decodeInt,
+		encode64: _encode64,
+		decode64: _decode64
 	};
 
 } ();
