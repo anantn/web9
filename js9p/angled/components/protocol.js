@@ -56,7 +56,7 @@ AngledProtocol.prototype =
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
 
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
-		var uri = ios.newURI("file:///Users/anant/Documents/Resumes/me/resume.html", null, null);
+		var uri = ios.newURI("chrome://angled/content/angled.png", null, null);
 		var chan = ios.newChannelFromURI(uri);
 		return chan;
 	}

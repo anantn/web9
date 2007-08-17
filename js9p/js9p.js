@@ -557,7 +557,8 @@ JS9P.Base = function() {
 		},
 		decodeMessage: function(data) {
 			return _decodeMessage(data);
-		}
+		},
+		decodeRaw: _decodeInt
 	};
 
 } ();
