@@ -1,16 +1,17 @@
-const NINEP_SCHEME = "ninep"
-const NINEP_PROTOCOL_NAME = "The 9P File Protocol" 
-const NINEP_PROTOCOL_CONTRACTID = "@mozilla.org/network/protocol;1?name=ninep";
-const NINEP_PROTOCOL_CID = Components.ID("6F16F5C0-AAC0-4A43-A800-EA33354B8CCC");
+/* Globals */
+var NINEP_SCHEME = "ninep"
+var NINEP_PROTOCOL_NAME = "The 9P File Protocol" 
+var NINEP_PROTOCOL_CONTRACTID = "@mozilla.org/network/protocol;1?name=ninep";
+var NINEP_PROTOCOL_CID = Components.ID("6F16F5C0-AAC0-4A43-A800-EA33354B8CCC");
 
-const SIMPLEURI_CONTRACTID = "@mozilla.org/network/simple-uri;1";
-const IOSERVICE_CONTRACTID = "@mozilla.org/network/io-service;1";
-const IOCHANNEL_CONTRACTID	= "@mozilla.org/network/stream-io-channel;1";
+var SIMPLEURI_CONTRACTID = "@mozilla.org/network/simple-uri;1";
+var IOSERVICE_CONTRACTID = "@mozilla.org/network/io-service;1";
+var IOCHANNEL_CONTRACTID	= "@mozilla.org/network/stream-io-channel;1";
 
-const nsISupports = Components.interfaces.nsISupports;
-const nsIIOService = Components.interfaces.nsIIOService;
-const nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
-const nsIURI = Components.interfaces.nsIURI;
+var nsISupports = Components.interfaces.nsISupports;
+var nsIIOService = Components.interfaces.nsIIOService;
+var nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
+var nsIURI = Components.interfaces.nsIURI;
 
 function AngledImport(obj) {
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
@@ -54,7 +55,6 @@ AngledProtocol.prototype =
 	newChannel: function(aURI) {
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
 
-		var x = new Socket();
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
 		var uri = ios.newURI("file:///Users/anant/Documents/Resumes/me/resume.html", null, null);
 		var chan = ios.newChannelFromURI(uri);
