@@ -20,8 +20,9 @@ function AngledProtocol() {
 AngledProtocol.prototype =
 {
 	QueryInterface: function(iid) {
-		if (!iid.equals(nsIProtocolHandler) && !iid.equals(nsISupports))
+		if ((!iid.equals(nsIProtocolHandler)) && (!iid.equals(nsISupports))) {
 			throw Components.results.NS_ERROR_NO_INTERFACE;
+		}
 		return this;
 	},
 
@@ -47,20 +48,24 @@ AngledProtocol.prototype =
 		var uri = ios.newURI("http://localhost/", null, null);
 		var chan = ios.newChannelFromURI(uri);
 		return chan;
-	},
-}
+	}
+};
 
-var AngledProtocolFactory = new Object();
+var AngledProtocolFactory = {};
+
 AngledProtocolFactory.createInstance = function(outer, iid) {
-	if(outer != null) throw Components.results.NS_ERROR_NO_AGGREGATION;
+	if(outer !== null) {
+		throw Components.results.NS_ERROR_NO_AGGREGATION;
+	}
 
-	if(!iid.equals(nsIProtocolHandler) && !iid.equals(nsISupports))
+	if((!iid.equals(nsIProtocolHandler)) && (!iid.equals(nsISupports))) {
         throw Components.results.NS_ERROR_INVALID_ARG;
+	}
 
     return new AngledProtocol();
-}
+};
 
-var AngledModule = new Object();
+var AngledModule = {};
 
 AngledModule.registerSelf = function(compMgr, fileSpec, location, type) {
 	compMgr = compMgr.QueryInterface(Components.interfaces.nsIComponentRegistrar);
@@ -69,27 +74,29 @@ AngledModule.registerSelf = function(compMgr, fileSpec, location, type) {
 										NINEP_PROTOCOL_NAME,
 											NINEP_PROTOCOL_CONTRACTID,
 												fileSpec, location, type);
-}
+};
 
 AngledModule.unregisterSelf = function(compMgr, fileSpec, location) {
     compMgr = compMgr.QueryInterface(Components.interfaces.nsIComponentRegistrar);
     
 	compMgr.unregisterFactoryLocation(NINEP_PROTOCOL_CID, fileSpec);
-}
+};
 
 AngledModule.getClassObject = function(compMgr, cid, iid) {
-	if (!cid.equals(NINEP_PROTOCOL_CID))
+	if (!cid.equals(NINEP_PROTOCOL_CID)) {
 		throw Components.results.NS_ERROR_NO_INTERFACE;
+	}
 
-	if (!iid.equals(Components.interfaces.nsIFactory))
+	if (!iid.equals(Components.interfaces.nsIFactory)) {
 		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+	}
     
 	return AngledProtocolFactory;
-}
+};
 
 AngledModule.canUnload = function(compMgr) {
 	return true;
-}
+};
 
 function NSGetModule(compMgr, fileSpec) {
 	return AngledModule;
