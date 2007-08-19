@@ -28,6 +28,7 @@ JS9P.Base = function() {
 
 	/* Globals */
 	var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var bigEndian = false;
 	var buffer = [];
 
 	/* Set the various 9P constants */
@@ -96,9 +97,7 @@ JS9P.Base = function() {
 		return ret;
 	} ();
 
-	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) 
-	 * Inspired by py9p.
-	 */
+	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) */
 	var messageFormats = function() {
 		var ret = {};
 		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
@@ -178,6 +177,9 @@ JS9P.Base = function() {
 		if (data) {
 			var l = data.length;
 			for(var i = l; i; buf[l - i] = data.charCodeAt(--i));
+			if (bigEndian) {
+				buf.reverse();
+			}
 		}
 		return buf;
 	}
@@ -219,7 +221,7 @@ JS9P.Base = function() {
 		return sum;
 	}
 
-	/* Encode an integer into 1, 2, 4 or 8 byte little-endian characters */
+	/* Encode an integer into 1, 2, 4 or 8 byte characters */
 	function _encodeInt(num, bytes) {
 		switch (bytes) {
 			case 1:
@@ -252,6 +254,10 @@ JS9P.Base = function() {
 		}
 		for(bits = -(-bits >> 3) - str.length; bits--; str[str.length] = "\0");
 
+		if (bigEndian) {
+			return str.reverse();
+		} 
+		
 		return str.join("");
 	};
 
@@ -446,7 +452,7 @@ JS9P.Base = function() {
 	}
 
 	// Do encoding on the basis of format string
-	function _encodeMessage(tag, type, base, args) {
+	function _encodeMessage(base, tag, type, args) {
 		buffer = [];
 		_enc1(type);
 		_enc2(tag);
@@ -558,9 +564,10 @@ JS9P.Base = function() {
 	return {
 		constants: constants,
 		msg: messageFormats,	
-		encodeMessage: function(tag, type, base, args) {
+		encodeMessage: function(bEndian, base, tag, type, args) {
+			bigEndian = bEndian;
 			if (_checkType(type)) {
-				return _encodeMessage(tag, messages[type], base, args);
+				return _encodeMessage(base, tag, messages[type], args);
 			} else {
 				alert("Not a valid type");
 				return false;
