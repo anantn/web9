@@ -1,0 +1,17 @@
+You need PHP-5.2+ installed. Run:
+
+$ phpize
+$ ./configure --enable-ixp
+$ make
+$ make install
+
+(You might need root privileges for the last step).
+Enable the extension by adding the line:
+
+extension=ixp.so
+
+in your php.ini. You can verify that the extension has been loaded:
+
+$ php -m | grep ixp
+
+Enjoy!
