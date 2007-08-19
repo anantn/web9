@@ -390,7 +390,7 @@ JS9P.Base = function() {
 			_encQ(qids[i]);
 		}
 	}
-	function _encTwalk(val, index) {
+	function _decRwalk(val, index) {
 		var len = _decodeInt(val.slice(index, index + 2), 2);
 		var tindex = index + 2;
 		for (var i = 0; i < len; i++) {

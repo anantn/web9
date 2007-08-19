@@ -7,7 +7,7 @@
 
 		<script type="text/javascript">
 			function doRequest() {
-				var body = JS9P.XHR.initialize();
+				var body = JS9P.XHR.stat();
 				new Ajax.Request('http://localhost/js9p/xhr/listener.php',
 				{
 					method: 'post',
@@ -15,7 +15,8 @@
 					postBody: body,
 					onSuccess: function(transport) {
 						var res = transport.responseText;
-						$('response').update(res);
+						var msg = eval(res);
+						$('response').update(msg)
 					},
 					onFailure: function() {
 						alert("Failure");

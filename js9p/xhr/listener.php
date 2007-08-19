@@ -1,15 +1,22 @@
 <?php
 
 $content = file_get_contents('php://input');
-$data = base64_decode($content);
+$messages = explode(',', $content);
+$sock = fsockopen('tcp://127.0.0.1', 1564);
+$responses = array();
 
-//$fd = fsockopen('tcp://127.0.0.1', 1564);
-//$x = fwrite($fd, $data);
+foreach($messages as $message) {
+	fwrite($sock, base64_decode($message));
+	$res  = fread($sock, 4);
+	$size = unpack("V", $res);
+	$size = $size[1];
 
-//$size = fread($fd, 4);
-//fclose($fd);
+	$msg = fread($sock, $size - 4);
+	$responses[] = base64_encode($res.$msg);
+}
 
-//header('application/octet-stream');
-echo base64_encode($data);
+echo json_encode($responses);
+fclose($sock);
+
 
 ?>

@@ -24,12 +24,27 @@
 */
 
 JS9P.XHR = function () {
+	
+	function _version() {
+		return JS9P.Base.encodeMessage(JS9P.Base.constants["NOTAG"], "Tversion", [16*1024, JS9P.Base.constants["VERSION"]]);
+	}
+
+	function _attach(tag, fid, user, share) {
+		return JS9P.Base.encodeMessage(tag, "Tattach", [fid, user, share]);
+	}
+
+	function _walk(tag, fid, newfid, path) {
+		return JS9P.Base.encodeMessage(tag, "Twalk", [[fid, newfid, path]]);
+	}
+
+	function _stat(tag, fid) {
+		return JS9P.Base.encodeMessage(tag, "Tstat", [fid]);
+	}
 
 	return {
-		initialize: function() {
-			JS9P.Base.setBigEndian(false);
-			var msg = JS9P.Base.encodeMessage(true, JS9P.Base.constants["NOTAG"], "Tversion", [16*1024, JS9P.Base.constants["VERSION"]]);
-			return msg;
+		stat: function() {
+			var msg = [_version(), _attach(1, 10, "js9p", ""), _walk(2, 10, 11, ""), _stat(3, 11)];
+			return msg.join(",");
 		}
 	}
 
