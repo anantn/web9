@@ -16,7 +16,11 @@
 					onSuccess: function(transport) {
 						var res = transport.responseText;
 						var msg = eval(res);
-						$('response').update(msg)
+						var dec = [];
+						for (var i = 0; i < msg.length; i++) {
+							dec[i] = JS9P.Base.decodeMessage(msg[i]);
+							alert(dec[i]);
+						}
 					},
 					onFailure: function() {
 						alert("Failure");

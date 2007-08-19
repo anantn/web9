@@ -30,7 +30,7 @@ JS9P.XHR = function () {
 	}
 
 	function _attach(tag, fid, user, share) {
-		return JS9P.Base.encodeMessage(tag, "Tattach", [fid, user, share]);
+		return JS9P.Base.encodeMessage(tag, "Tattach", [fid, JS9P.Base.constants["NOFID"], user, share]);
 	}
 
 	function _walk(tag, fid, newfid, path) {
@@ -43,7 +43,7 @@ JS9P.XHR = function () {
 
 	return {
 		stat: function() {
-			var msg = [_version(), _attach(1, 10, "js9p", ""), _walk(2, 10, 11, ""), _stat(3, 11)];
+			var msg = [_version(), _attach(1, 10, "js9p", ""), _stat(2, 10)];
 			return msg.join(",");
 		}
 	}
