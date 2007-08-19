@@ -101,8 +101,8 @@ JS9P.Base = function() {
 	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) */
 	var messageFormats = function() {
 		var ret = {};
-		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
-					"484", "D", "48D", "4", "4", "", "4", "", "4", "{Stat}", "4{Stat}", ""];
+		var fmt = ["4S", "4S", "4SS", "Q", "44SS", "Q", "", "S", "2", "", "{Twalk}", "{Rwalk}", "41", "Q4",
+					"4S41", "Q4", "484", "D", "48D", "4", "4", "", "4", "", "4", "{Stat}", "4{Stat}", ""];
 
 		for (var i = 100, j = 0; (j < fmt.length - 1); i += 2, j += 2) {
 			ret[i] = fmt[j];
@@ -428,7 +428,7 @@ JS9P.Base = function() {
 		var mode = _decodeInt(val.slice(index, index + 4), 4);
 		var atime = _decodeInt(val.slice(index + 4, index + 8), 4);
 		var mtime = _decodeInt(val.slice(index + 8, index + 12), 4);
-		var length = _decodInt(val.slice(index + 12, index + 20), 8);
+		var length = _decodeInt(val.slice(index + 12, index + 20), 8);
 		index = _decS(val, index + 20);
 		index = _decS(val, index);
 		index = _decS(val, index);
@@ -438,8 +438,8 @@ JS9P.Base = function() {
 		var uid = buffer.splice(buffer.length - 1, 1);
 		var name = buffer.splice(buffer.length - 1, 1);
 		var qid = buffer.splice(buffer.length - 1, 1);
-		
-		buffer[buffer.length] = [type, dev, qid, mode, atime, mtime, len, name, uid, gid, muid];
+	
+		buffer[buffer.length] = [type, dev, qid, mode, atime, mtime, length, name, uid, gid, muid];
 		return index;
 	}
 
@@ -511,7 +511,7 @@ JS9P.Base = function() {
 	}
 
 	// Decode a message
-	function _decodeMessage(base, msg) {
+	function _decodeMessage(msg) {
 		buffer = [];
 		var buf;
 		if (encBase64) {
@@ -564,7 +564,8 @@ JS9P.Base = function() {
 
 	return {
 		constants: constants,
-		msg: messageFormats,
+		fmt: messageFormats,
+		msg: messages,
 		setBigEndian: function(val) {
 			encBigEndian = val;
 		},
@@ -582,7 +583,13 @@ JS9P.Base = function() {
 		decodeMessage: function(data) {
 			return _decodeMessage(data);
 		},
-		decodeRaw: _decodeInt
+		decodeRaw: function(data, bytes) {
+			if (encBase64) {
+	   			return _decodeInt(_decode64(data), bytes);
+			} else {
+				return _decodeInt(data, bytes);
+			}
+		}
 	};
 
 } ();
