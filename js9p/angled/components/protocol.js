@@ -25,7 +25,7 @@ function AngledImport(obj) {
 	loader.loadSubScript("file://"+__LOCATION__.parent.path+"/angled.js", obj);
 }
 AngledImport(this);
-
+AngledLog("Scripts Imported");
 
 function AngledProtocol() {
 

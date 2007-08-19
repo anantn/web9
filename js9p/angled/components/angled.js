@@ -8,20 +8,21 @@ JS9P.Angled = function() {
 	}
 
 	function _version() {
-		var msg = JS9P.Base.encodeMessage(JS9P.Base.constants["NOTAG"], "Tversion", false, [16*1024, JS9P.Base.constants["VERSION"]]);
+		var msg = JS9P.Base.encodeMessage(true, false, JS9P.Base.constants["NOTAG"], "Tversion", [16*1024, JS9P.Base.constants["VERSION"]]);
 		for (var i = 0; i < msg.length; i++) {
 			socket.write(msg[i]);
 		}
 
-		var size = socket.read(4);
+		//var size = socket.read(4);
 		//var ret = socket.read(JS9P.Base.decodeRaw(size, 4) - 4);
 
+		AngledLog(msg);
 		AngledLog("Bytes Written!");
 		//AngledLog(JS9P.Base.decodeRaw(size, 4));
 		
 		socket.close();
 		//return JS9P.Base.decodeMessage(size + ret);
-		return JS9P.Base.decodeRaw(size);
+		//return JS9P.Base.decodeRaw(size);
 	}
 
 	return {

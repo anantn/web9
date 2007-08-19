@@ -28,7 +28,8 @@ JS9P.Base = function() {
 
 	/* Globals */
 	var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-	var bigEndian = false;
+	var encBigEndian = false;
+	var encBase64 = true;
 	var buffer = [];
 
 	/* Set the various 9P constants */
@@ -177,7 +178,7 @@ JS9P.Base = function() {
 		if (data) {
 			var l = data.length;
 			for(var i = l; i; buf[l - i] = data.charCodeAt(--i));
-			if (bigEndian) {
+			if (encBigEndian) {
 				buf.reverse();
 			}
 		}
@@ -254,7 +255,7 @@ JS9P.Base = function() {
 		}
 		for(bits = -(-bits >> 3) - str.length; bits--; str[str.length] = "\0");
 
-		if (bigEndian) {
+		if (encBigEndian) {
 			return str.reverse();
 		} 
 		
@@ -452,7 +453,7 @@ JS9P.Base = function() {
 	}
 
 	// Do encoding on the basis of format string
-	function _encodeMessage(base, tag, type, args) {
+	function _encodeMessage(tag, type, args) {
 		buffer = [];
 		_enc1(type);
 		_enc2(tag);
@@ -502,7 +503,7 @@ JS9P.Base = function() {
 		_enc4(len + 4);
 
 		var ret = buffer.join("") + tmp.join("")
-		if (base) {
+		if (encBase64) {
 			ret = _encode64(ret);
 		}
 
@@ -513,7 +514,7 @@ JS9P.Base = function() {
 	function _decodeMessage(base, msg) {
 		buffer = [];
 		var buf;
-		if (base) {
+		if (encBase64) {
 			buf = _decode64(msg);
 		} else {
 			buf = msg;
@@ -563,18 +564,23 @@ JS9P.Base = function() {
 
 	return {
 		constants: constants,
-		msg: messageFormats,	
-		encodeMessage: function(bEndian, base, tag, type, args) {
-			bigEndian = bEndian;
+		msg: messageFormats,
+		setBigEndian: function(val) {
+			encBigEndian = val;
+		},
+		setBase64: function(val) {
+			encBase64 = val; 
+		},
+		encodeMessage: function(tag, type, args) {
 			if (_checkType(type)) {
-				return _encodeMessage(base, tag, messages[type], args);
+				return _encodeMessage(tag, messages[type], args);
 			} else {
 				alert("Not a valid type");
 				return false;
 			}
 		},
-		decodeMessage: function(base, data) {
-			return _decodeMessage(base, data);
+		decodeMessage: function(data) {
+			return _decodeMessage(data);
 		},
 		decodeRaw: _decodeInt
 	};

@@ -28,6 +28,8 @@ JS9P.Base = function() {
 
 	/* Globals */
 	var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var encBigEndian = false;
+	var encBase64 = true;
 	var buffer = [];
 
 	/* Set the various 9P constants */
@@ -96,9 +98,7 @@ JS9P.Base = function() {
 		return ret;
 	} ();
 
-	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) 
-	 * Inspired by py9p.
-	 */
+	/* Message formats: n (n bytes), S (string, 2 byte length), D (string, 4 byte length), Q (qid) and {} (custom) */
 	var messageFormats = function() {
 		var ret = {};
 		var fmt = ["4S", "4S", "4SS", "Q", "", "S", "2", "", "44SS", "Q", "{Twalk}", "{Rwalk}", "41", "Q4",
@@ -178,6 +178,9 @@ JS9P.Base = function() {
 		if (data) {
 			var l = data.length;
 			for(var i = l; i; buf[l - i] = data.charCodeAt(--i));
+			if (encBigEndian) {
+				buf.reverse();
+			}
 		}
 		return buf;
 	}
@@ -219,7 +222,7 @@ JS9P.Base = function() {
 		return sum;
 	}
 
-	/* Encode an integer into 1, 2, 4 or 8 byte little-endian characters */
+	/* Encode an integer into 1, 2, 4 or 8 byte characters */
 	function _encodeInt(num, bytes) {
 		switch (bytes) {
 			case 1:
@@ -252,6 +255,10 @@ JS9P.Base = function() {
 		}
 		for(bits = -(-bits >> 3) - str.length; bits--; str[str.length] = "\0");
 
+		if (encBigEndian) {
+			return str.reverse();
+		} 
+		
 		return str.join("");
 	};
 
@@ -446,7 +453,7 @@ JS9P.Base = function() {
 	}
 
 	// Do encoding on the basis of format string
-	function _encodeMessage(tag, type, base, args) {
+	function _encodeMessage(tag, type, args) {
 		buffer = [];
 		_enc1(type);
 		_enc2(tag);
@@ -496,7 +503,7 @@ JS9P.Base = function() {
 		_enc4(len + 4);
 
 		var ret = buffer.join("") + tmp.join("")
-		if (base) {
+		if (encBase64) {
 			ret = _encode64(ret);
 		}
 
@@ -507,7 +514,7 @@ JS9P.Base = function() {
 	function _decodeMessage(base, msg) {
 		buffer = [];
 		var buf;
-		if (base) {
+		if (encBase64) {
 			buf = _decode64(msg);
 		} else {
 			buf = msg;
@@ -557,17 +564,23 @@ JS9P.Base = function() {
 
 	return {
 		constants: constants,
-		msg: messageFormats,	
-		encodeMessage: function(tag, type, base, args) {
+		msg: messageFormats,
+		setBigEndian: function(val) {
+			encBigEndian = val;
+		},
+		setBase64: function(val) {
+			encBase64 = val; 
+		},
+		encodeMessage: function(tag, type, args) {
 			if (_checkType(type)) {
-				return _encodeMessage(tag, messages[type], base, args);
+				return _encodeMessage(tag, messages[type], args);
 			} else {
 				alert("Not a valid type");
 				return false;
 			}
 		},
-		decodeMessage: function(base, data) {
-			return _decodeMessage(base, data);
+		decodeMessage: function(data) {
+			return _decodeMessage(data);
 		},
 		decodeRaw: _decodeInt
 	};
