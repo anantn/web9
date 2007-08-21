@@ -564,8 +564,6 @@ JS9P.Base = function() {
 
 	return {
 		constants: constants,
-		fmt: messageFormats,
-		msg: messages,
 		setBigEndian: function(val) {
 			encBigEndian = val;
 		},
