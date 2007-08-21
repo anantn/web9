@@ -17,7 +17,7 @@ JS9P.Angled = function() {
 			AngledLog(e);
 			return false;
 		}
-		//AngledLog("Written: " + JS9P.Base.decodeMessage(msg));
+		AngledLog("Written: " + JS9P.Base.decodeMessage(msg));
 
 		try {
 			var smsg = socket.read(4);
@@ -27,14 +27,13 @@ JS9P.Angled = function() {
 		}
 		
 		var size = JS9P.Base.decodeRaw(smsg, 4);
-		AngledLog("Read size: " + size);
 		try {
 			var rmsg = socket.read(size - 4);
 		} catch(e) {
 			AngledLog(e);
 			return false;
 		}
-		AngledLog("Read rest: " + String(size - 4));
+		AngledLog("Read Message: " + size);
 		return JS9P.Base.decodeMessage(smsg + rmsg);
 	}
 	

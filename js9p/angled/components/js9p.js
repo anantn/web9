@@ -362,7 +362,7 @@ JS9P.Base = function() {
 	function _encTwalk(args) {
 		_enc4(args[0]);	
 		_enc4(args[1]);	
-		names = args[2];
+		var names = args[2];
 		_enc2(names.length);	
 		for (var i = 0; i < names.length; i++) {
 			_encS(names[i]);
@@ -370,17 +370,18 @@ JS9P.Base = function() {
 	}
 	function _decTwalk(val, index) {
 		var fid = _decodeInt(val.slice(index, index + 4), 4);
-		var newfid = _decodeInt(val.slice(index + 4, index + 12), 8);
-		var len = _decodeInt(val.slice(index + 12, index + 14), 2);
+		var newfid = _decodeInt(val.slice(index + 4, index + 8), 4);
+		var len = _decodeInt(val.slice(index + 8, index + 10), 2);
 		
-		var tindex = index + 14;
+		var tindex = index + 10;
+		var names = [];
 		for (var i = 0; i < len; i++) {
 			tindex = _decS(val, tindex);
+			names[names.length] = buffer.splice(buffer.length - 1);
 		}
-
-		var names = buffer.splice(buffer.length - len - 1, len);
+		
 		buffer[buffer.length] = [fid, newfid, names];
-		return tindex;
+		return index + 14;
 	}
 
 	// Encode an Rwalk message. qids is an array of Qids. Each qid = [type, version, path]
