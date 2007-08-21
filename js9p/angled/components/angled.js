@@ -17,7 +17,7 @@ JS9P.Angled = function() {
 			AngledLog(e);
 			return false;
 		}
-		AngledLog("Written: " + msg.length);
+		AngledLog("Written: " + JS9P.Base.decodeMessage(msg));
 
 		try {
 			var smsg = socket.read(4);
@@ -25,10 +25,17 @@ JS9P.Angled = function() {
 			AngledLog(e);
 			return false;
 		}
+		
 		var size = JS9P.Base.decodeRaw(smsg, 4);
-		var msg = socket.read(size - 4);
-		AngledLog("Read: " + msg.length + 4);
-		return JS9P.Base.decodeMessage(smsg + msg);
+		AngledLog("Read size: " + size);
+		try {
+			var rmsg = socket.read(size - 4);
+		} catch(e) {
+			AngledLog(e);
+			return false;
+		}
+		AngledLog("Read rest: " + String(size - 4));
+		return JS9P.Base.decodeMessage(smsg + rmsg);
 	}
 	
 	return {
@@ -47,8 +54,8 @@ JS9P.Angled = function() {
 			return _doTransaction(msg);
 		},
 
-		attach: function(tag, uname, aname) {
-			var msg = JS9P.Base.encodeMessage(tag, "Tattach", [uname, aname]);
+		attach: function(tag, fid, afid, uname, aname) {
+			var msg = JS9P.Base.encodeMessage(tag, "Tattach", [fid, afid, uname, aname]);
 			return _doTransaction(msg);
 		},
 
@@ -102,7 +109,7 @@ JS9P.Angled = function() {
 		},
 
 		walk: function(tag, fid, newfid, names) {
-			var msg = JS9P.Base.encodeMessage(tag, "Twalk", [fid, newfid, names]);
+			var msg = JS9P.Base.encodeMessage(tag, "Twalk", [[fid, newfid, names]]);
 			return _doTransaction(msg);
 		}
 	}

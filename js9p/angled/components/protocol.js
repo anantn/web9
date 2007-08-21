@@ -13,9 +13,13 @@ var nsIIOService = Components.interfaces.nsIIOService;
 var nsIProtocolHandler = Components.interfaces.nsIProtocolHandler;
 var nsIURI = Components.interfaces.nsIURI;
 
-function AngledLog(msg) {
+function AngledLog(msg, error) {
 	var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-	consoleService.logStringMessage(msg);
+	if (error) {
+		consoleService.logStringError(msg);
+	} else {
+		consoleService.logStringMessage(msg);
+	}
 }
 
 function AngledImport(obj) {
@@ -26,6 +30,13 @@ function AngledImport(obj) {
 }
 AngledImport(this);
 AngledLog("Scripts Imported");
+
+function AngledDefaultChannel() {
+	var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
+	var uri = ios.newURI("chrome://angled/content/angled.png", null, null);
+	var chan = ios.newChannelFromURI(uri);
+	return chan;
+}
 
 function AngledProtocol() {
 
@@ -56,16 +67,37 @@ AngledProtocol.prototype =
 
 	newChannel: function(aURI) {
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
-		AngledLog(angledURI);
 
+		var host = '';
+		var port = 564;
+		var splitURI = angledURI.split('/');
+		var header = splitURI[0].split('!');
 
-		var jObj = JS9P.Angled.initialize('localhost', 1564);
+		switch (header.length) {
+			case 1: break;
+			case 2: host = header[0]; port = header[1]; break;
+			case 3:
+				if (header[0] != 'tcp') {
+					AngledLog("Angled supports only the TCP transport!", true);
+					return AngledDeafaultChannel();
+				} else {
+					host = header[1];
+					port = header[2];
+				} break;
+			default:
+				return AngledDefaultChannel();
+		}
+		
+		if ((splitURI[-1] == '/') || (splitURI[-1] == ''))
+			return AngledDefaultChannel();
+
+		var jObj = JS9P.Angled.initialize(host, port);
+		JS9P.Angled.version();
+		JS9P.Angled.attach(1, 10, JS9P.Base.constants['NOFID'], 'angled', '');
+		AngledLog(JS9P.Angled.walk(2, 10, 11, ['/', 'kix']));
+		
 		jObj.close();
-
-		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
-		var uri = ios.newURI("chrome://angled/content/angled.png", null, null);
-		var chan = ios.newChannelFromURI(uri);
-		return chan;
+		return AngledDefaultChannel();
 	}
 };
 
