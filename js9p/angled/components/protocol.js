@@ -56,9 +56,11 @@ AngledProtocol.prototype =
 
 	newChannel: function(aURI) {
 		var angledURI = aURI.spec.substr((aURI.spec.indexOf("://") + "://".length));
+		AngledLog(angledURI);
+
 
 		var jObj = JS9P.Angled.initialize('localhost', 1564);
-		AngledLog(jObj);
+		jObj.close();
 
 		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
 		var uri = ios.newURI("chrome://angled/content/angled.png", null, null);
