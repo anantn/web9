@@ -370,10 +370,10 @@ JS9P.Base = function() {
 	}
 	function _decTwalk(val, index) {
 		var fid = _decodeInt(val.slice(index, index + 4), 4);
-		var newfid = _decodeInt(val.slice(index + 4, index + 8), 8);
-
-		var len = _decodeInt(val.slice(index + 8, index + 10), 2);
-		var tindex = index + 10;
+		var newfid = _decodeInt(val.slice(index + 4, index + 12), 8);
+		var len = _decodeInt(val.slice(index + 12, index + 14), 2);
+		
+		var tindex = index + 14;
 		for (var i = 0; i < len; i++) {
 			tindex = _decS(val, tindex);
 		}
