@@ -403,49 +403,52 @@ JS9P.Base = function() {
 	}
 
 	// Encode an stat message. 
-	// [type, dev, qid, mode, atime, mtime, len, name, uid, gid, muid]
+	// [[type, dev, qid, mode, atime, mtime, len, name, uid, gid, muid], ...]
 	// qid itself is an array: [type, version, path]
 	function _encStat(val) {
-		size = 2 + 4 + 13 + 4 + 4 + 4 + 8 + name.length + uid.length + gid.length + muid.length;
-		_enc2(size);
-		_enc2(val[0]);
-		_enc4(val[1]);
-		_encQ(val[2]);
-		_enc4(val[3]);
-		_enc4(val[4]);
-		_enc4(val[5]);
-		_enc8(val[6]);
-		_encS(val[7]);
-		_encS(val[8]);
-		_encS(val[9]);
-		_encS(val[10]);
+		statSize = val.length;
+		_enc2(statSize);
+		for (var i = 0; i < statSize; i++) {
+			var thisSize = 2 + 4 + 13 + 4 + 4 + 4 + 8 + name.length + uid.length + gid.length + muid.length;
+			_enc2(thisSize);
+			_enc2(val[i][0]);
+			_enc4(val[i][1]);
+			_encQ(val[i][2]);
+			_enc4(val[i][3]);
+			_enc4(val[i][4]);
+			_enc4(val[i][5]);
+			_enc8(val[i][6]);
+			_encS(val[i][7]);
+			_encS(val[i][8]);
+			_encS(val[i][9]);
+			_encS(val[i][10]);
+		}
 	}	
 	function _decStat(val, index) {
-		/* WTF? */
-		var size = _decodeInt(val.slice(index, index + 4), 4);
-		/*
-		var type = _decodeInt(val.slice(index + 2, index + 4), 2);
-		var dev = _decodeInt(val.slice(index + 4, index + 8), 4);
-		index = _decQ(val, index + 8);
-		*/
-		var type = _decodeInt(val.slice(index + 4, index + 6), 2);
-		var dev = _decodeInt(val.slice(index + 6, index + 10), 4);
-		index = _decQ(val, index + 10);
-		var mode = _decodeInt(val.slice(index, index + 4), 4);
-		var atime = _decodeInt(val.slice(index + 4, index + 8), 4);
-		var mtime = _decodeInt(val.slice(index + 8, index + 12), 4);
-		var length = _decodeInt(val.slice(index + 12, index + 20), 8);
-		index = _decS(val, index + 20);
-		index = _decS(val, index);
-		index = _decS(val, index);
-		index = _decS(val, index);
-		var muid = buffer.splice(buffer.length - 1, 1);
-		var gid = buffer.splice(buffer.length - 1, 1);
-		var uid = buffer.splice(buffer.length - 1, 1);
-		var name = buffer.splice(buffer.length - 1, 1);
-		var qid = buffer.splice(buffer.length - 1, 1);
+		var num = _decodeInt(val.slice(index, index + 2), 2);
+		var ret = [];
+		for (var i = 0; i < num; i++) {
+			var size = _decodeInt(val.slice(index + 2, index + 4), 2);
+			var type = _decodeInt(val.slice(index + 4, index + 6), 2);
+			var dev = _decodeInt(val.slice(index + 6, index + 10), 4);
+			index = _decQ(val, index + 10);
+			var mode = _decodeInt(val.slice(index, index + 4), 4);
+			var atime = _decodeInt(val.slice(index + 4, index + 8), 4);
+			var mtime = _decodeInt(val.slice(index + 8, index + 12), 4);
+			var length = _decodeInt(val.slice(index + 12, index + 20), 8);
+			index = _decS(val, index + 20);
+			index = _decS(val, index);
+			index = _decS(val, index);
+			index = _decS(val, index);
+			var muid = buffer.splice(buffer.length - 1, 1);
+			var gid = buffer.splice(buffer.length - 1, 1);
+			var uid = buffer.splice(buffer.length - 1, 1);
+			var name = buffer.splice(buffer.length - 1, 1);
+			var qid = buffer.splice(buffer.length - 1, 1);
 		
-		buffer[buffer.length] = [type, dev, qid, mode, atime, mtime, length, name, uid, gid, muid];
+			ret[ret.length] = [type, dev, qid, mode, atime, mtime, length, name, uid, gid, muid];
+		}
+		buffer[buffer.length] = ret;
 		return index;
 	}
 
