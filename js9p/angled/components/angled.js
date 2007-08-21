@@ -17,7 +17,7 @@ JS9P.Angled = function() {
 			AngledLog(e);
 			return false;
 		}
-		AngledLog("Written: " + JS9P.Base.decodeMessage(msg));
+		//AngledLog("Written: " + JS9P.Base.decodeMessage(msg));
 
 		try {
 			var smsg = socket.read(4);
