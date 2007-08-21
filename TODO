@@ -1,0 +1,15 @@
+php9p
+
+	* Fix IxpServer Callbacks
+	* Use Kris' idea of dynamically retrieving object properties
+	* Throw exceptions wherever appropriate instead of errors/warnings
+
+angled
+
+	* Implement threading and allow simultaneous messages to be sent
+	* Un-freeze the UI by moving calls to JS9P.Angled to a new nsIChannel implementation
+
+xhr
+
+	* Create an Ajaxy-Web2.0-Eye-Candy UI :)
+
