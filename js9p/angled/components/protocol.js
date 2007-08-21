@@ -97,9 +97,9 @@ AngledProtocol.prototype =
 		JS9P.Angled.walk(2, 10, 11, ['/', 'kix']);
 		var stat = JS9P.Angled.stat(3, 11);
 		AngledLog(stat[-5]);
-		JS9P.Angled.open(4, 11);
+		//JS9P.Angled.open(4, 11);
 		//AngledLog(JS9P.Angled.read(5, 11, 0, stat[-5]));
-		JS9P.Angled.clunk(5, 11);
+		//JS9P.Angled.clunk(5, 11, JS9P.Base.constants['OREAD']);
 		jObj.close();
 		return AngledDefaultChannel();
 	}

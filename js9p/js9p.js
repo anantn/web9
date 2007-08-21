@@ -426,17 +426,18 @@ JS9P.Base = function() {
 		}
 	}	
 	function _decStat(val, index) {
-		var num = _decodeInt(val.slice(index, index + 2), 2);
+		var statSize = _decodeInt(val.slice(index, index + 2), 2);
 		var ret = [];
-		for (var i = 0; i < num; i++) {
+		var totalRead = 0;
+		while (totalRead < statSize) {
 			var size = _decodeInt(val.slice(index + 2, index + 4), 2);
-			var type = _decodeInt(val.slice(index + 4, index + 6), 2);
-			var dev = _decodeInt(val.slice(index + 6, index + 10), 4);
-			index = _decQ(val, index + 10);
-			var mode = _decodeInt(val.slice(index, index + 4), 4);
-			var atime = _decodeInt(val.slice(index + 4, index + 8), 4);
-			var mtime = _decodeInt(val.slice(index + 8, index + 12), 4);
-			var length = _decodeInt(val.slice(index + 12, index + 20), 8);
+			var type = _decodeInt(val.slice(index + 4, index + 6), 2); 
+			var dev = _decodeInt(val.slice(index + 6, index + 10), 4); 
+			index = _decQ(val, index + 10); 
+			var mode = _decodeInt(val.slice(index, index + 4), 4); 
+			var atime = _decodeInt(val.slice(index + 4, index + 8), 4); 
+			var mtime = _decodeInt(val.slice(index + 8, index + 12), 4); 
+			var length = _decodeInt(val.slice(index + 12, index + 20), 8); 
 			index = _decS(val, index + 20);
 			index = _decS(val, index);
 			index = _decS(val, index);
@@ -448,6 +449,7 @@ JS9P.Base = function() {
 			var qid = buffer.splice(buffer.length - 1, 1);
 		
 			ret[ret.length] = [type, dev, qid, mode, atime, mtime, length, name, uid, gid, muid];
+			totalRead += (size + 2);
 		}
 		buffer[buffer.length] = ret;
 		return index;
