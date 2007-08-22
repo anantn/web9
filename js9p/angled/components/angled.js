@@ -36,6 +36,30 @@ JS9P.Angled = function() {
 		AngledLog("Read Message: " + size);
 		return JS9P.Base.decodeMessage(smsg + rmsg);
 	}
+
+	function _doFullRead(tag, fid, offset, response) {
+		var stat = JS9P.Angled.stat(tag + 1, fid);
+		var length = stat[2][0][0].len;
+		var iounit = response[2][1];
+
+		AngledLog("IOUnit: " + iounit);
+		AngledLog("Total Size: " + length);
+
+		/* if total size < iounit, one read is enough */
+		var loops = Math.floor(length / iounit) + 1;
+		var data = "";
+		var off = offset;
+		for (i = 0; i < loops; i++) {
+			var msg = JS9P.Base.encodeMessage(tag, "Tread", [fid, off, iounit]);
+			var ret = _doTransaction(msg);
+			off += ret[2].length;
+			data += ret[2];
+		}
+		var tmp = [];
+		tmp[0] = ret[0]; tmp[1] = ret[1]; tmp[2] = data;
+
+		return tmp;
+	}
 	
 	return {
 		initialize: function(host, port) {
@@ -78,9 +102,15 @@ JS9P.Angled = function() {
 			return _doTransaction(msg);
 		},
 
+		/* Pass the result of JS9P.Base.open to count for a full read */
 		read: function(tag, fid, offset, count) {
-			var msg = JS9P.Base.encodeMessage(tag, "Tread", [fid, offset, count]);
-			return _doTransaction(msg);
+			if (typeof(count) == typeof([])) {
+				AngledLog("Doing Full read");
+				return _doFullRead(tag, fid, offset, count);
+			} else {
+				var msg = JS9P.Base.encodeMessage(tag, "Tread", [fid, offset, count]);
+				return _doTransaction(msg);
+			}
 		},
 
 		write: function(tag, fid, offset, data) {

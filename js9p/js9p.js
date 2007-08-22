@@ -437,7 +437,7 @@ JS9P.Base = function() {
 			var mode = _decodeInt(val.slice(index, index + 4), 4); 
 			var atime = _decodeInt(val.slice(index + 4, index + 8), 4); 
 			var mtime = _decodeInt(val.slice(index + 8, index + 12), 4); 
-			var length = _decodeInt(val.slice(index + 12, index + 20), 8); 
+			var len = _decodeInt(val.slice(index + 12, index + 20), 8); 
 			index = _decS(val, index + 20);
 			index = _decS(val, index);
 			index = _decS(val, index);
@@ -448,7 +448,9 @@ JS9P.Base = function() {
 			var name = buffer.splice(buffer.length - 1, 1);
 			var qid = buffer.splice(buffer.length - 1, 1);
 		
-			ret[ret.length] = [type, dev, qid, mode, atime, mtime, length, name, uid, gid, muid];
+			ret[ret.length] = {type: type, dev: dev, qid: qid, mode: mode,
+								atime: atime, mtime: mtime, len: len, name: name,
+								 uid: uid, gid: gid, muid: muid};
 			totalRead += (size + 2);
 		}
 		buffer[buffer.length] = ret;

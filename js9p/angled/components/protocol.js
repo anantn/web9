@@ -31,9 +31,13 @@ function AngledImport(obj) {
 AngledImport(this);
 AngledLog("Scripts Imported");
 
-function AngledDefaultChannel() {
+function AngledDefaultChannel(error) {
 	var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
-	var uri = ios.newURI("chrome://angled/content/angled.png", null, null);
+	var uri;
+	if (error)
+		uri = ios.newURI("chrome://angled/content/glenda-error.png", null, null);
+	else
+		uri = ios.newURI("chrome://angled/content/angled.png", null, null);
 	var chan = ios.newChannelFromURI(uri);
 	return chan;
 }
@@ -91,17 +95,51 @@ AngledProtocol.prototype =
 		if ((splitURI[-1] == '/') || (splitURI[-1] == ''))
 			return AngledDefaultChannel();
 
+		/* We expect no errors for the first two... */
 		var jObj = JS9P.Angled.initialize(host, port);
 		JS9P.Angled.version();
-		JS9P.Angled.attach(1, 10, JS9P.Base.constants['NOFID'], 'angled', '');
-		JS9P.Angled.walk(2, 10, 11, ['/', 'kix']);
-		var stat = JS9P.Angled.stat(3, 11);
-		AngledLog(stat[-5]);
-		//JS9P.Angled.open(4, 11);
-		//AngledLog(JS9P.Angled.read(5, 11, 0, stat[-5]));
-		//JS9P.Angled.clunk(5, 11, JS9P.Base.constants['OREAD']);
+
+		var ret;
+		/* But from here on, maybe */
+		ret = JS9P.Angled.attach(1, 10, JS9P.Base.constants['NOFID'], 'angled', '');
+		if (ret[0] == 107)
+			return AngledDefaultChannel(true);
+
+		ret = JS9P.Angled.walk(2, 10, 11, ['/', 'kix']);
+		if (ret[0] == 107)
+			return AngledDefaultChannel(true);
+
+		var toOpen = JS9P.Angled.open(3, 11, JS9P.Base.constants['OREAD']);
+		ret = JS9P.Angled.read(4, 11, 0, toOpen);
+		if (ret[0] == 107)
+			return AngledDefaultChannel(true);
+
+		JS9P.Angled.clunk(5, 11);
 		jObj.close();
-		return AngledDefaultChannel();
+
+		/* Alright, time to show the result */
+		var file = Components.classes["@mozilla.org/file/directory_service;1"]
+                     .getService(Components.interfaces.nsIProperties)
+                     .get("TmpD", Components.interfaces.nsIFile);
+		file.append("angled-tmp");
+		file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
+		
+		/* Write the file */
+		var stream = Components.classes["@mozilla.org/network/safe-file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+		stream.init(file, 0x04 | 0x08 | 0x20, 0600, 0);
+		stream.write(ret[2], ret[2].length);
+		if (stream instanceof Components.interfaces.nsISafeOutputStream) {
+			stream.finish();
+		} else {
+			stream.close();
+		}
+		
+		var ios = Components.classes[IOSERVICE_CONTRACTID].getService(nsIIOService);
+		var fileHandler = ios.getProtocolHandler("file").QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+		var URL = fileHandler.getURLSpecFromFile(file);
+		var uri = ios.newURI(URL, null, null);
+		var chan = ios.newChannelFromURI(uri);
+		return chan;
 	}
 };
 
