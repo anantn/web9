@@ -39,6 +39,9 @@ JS9P.Angled = function() {
 
 	function _doFullRead(tag, fid, offset, response) {
 		var stat = JS9P.Angled.stat(tag + 1, fid);
+		if (stat[0] == 107)
+			return stat;
+
 		var length = stat[2][0][0].len;
 		var iounit = response[2][1];
 

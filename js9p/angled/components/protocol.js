@@ -105,7 +105,14 @@ AngledProtocol.prototype =
 		if (ret[0] == 107)
 			return AngledDefaultChannel(true);
 
-		ret = JS9P.Angled.walk(2, 10, 11, ['/', 'kix']);
+		/* Prepare walk path */
+		var walk = ['/'];
+		for (var i = 1; i < splitURI.length; i++) {
+			if (splitURI[i] != '')
+				walk.push(splitURI[i]);
+		}
+
+		ret = JS9P.Angled.walk(2, 10, 11, walk);
 		if (ret[0] == 107)
 			return AngledDefaultChannel(true);
 
