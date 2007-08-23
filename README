@@ -1,8 +1,9 @@
 The Web9 Project
 ~~~~~~~~~~~~~~~~
-You will find two directories: js9p and php9p when you check out the web9 sources.
-js9p corresponds to the JavaScript implemetation of 9P, while php9p is the PHP 
-binding to libixp.
+You will find three directories: Net_9P, js9p and php9p when you check out the
+web9 sources. js9p corresponds to the JavaScript implemetation of 9P, while php9p
+is the PHP binding to libixp. Net_9P is a (currently incomplete) implementation
+of 9P in pure PHP.
 
 PHP9P
 ~~~~~
