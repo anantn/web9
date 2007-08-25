@@ -497,6 +497,23 @@ class Net_9P_Base
         return $this->buffer;
     }
 
+    /**
+     * Decode a raw integer
+     *
+     * @access  public
+     * @param   String  $date   Binary to decode
+     */
+    public function decodeRawInteger($data)
+    {
+        $this->buffer = array();
+        $this->decodeInteger($data, 4);
+        $ret = $this->buffer[0];
+
+        $this->buffer = array();
+        return $ret;
+    }
+
+
 }
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
