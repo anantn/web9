@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PEAR::Net_9P_Qid
+ * PEAR::Net_9P_Base_Qid
  *
  * This class represents a Qid, used in the
  * 9P Protocol.
@@ -14,7 +14,7 @@
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  */
 
-class Net_9P_Qid
+class Net_9P_Base_Qid
 {
     // {{{ properties
     

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PEAR::Net_9P_Stat
+ * PEAR::Net_9P_Base_Stat
  *
  * This class represents a Stat, used in the
  * 9P Protocol.
@@ -14,7 +14,7 @@
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  */
 
-class Net_9P_Stat
+class Net_9P_Base_Stat
 {
     // {{{ properties
     

@@ -187,7 +187,7 @@ class Net_9P_Base
      * Encodes a Qid into the 9P format
      *
      * @access  private
-     * @param   Net_9P_Qid  $value  Qid to encode
+     * @param   Net_9P_Base_Qid  $value  Qid to encode
      */
     private function encodeQid($value)
     {
@@ -218,7 +218,7 @@ class Net_9P_Base
         $nIndex = $this->decodeInteger($value, $nIndex, 8);
         $path = $this->buffer[-1];
 
-        $qid = new Net_9P_Qid($qType, $version, $path);
+        $qid = new Net_9P_Base_Qid($qType, $version, $path);
         array_splice($this->buffer, -3, 3, $qid);
 
         return $nIndex;
@@ -287,7 +287,7 @@ class Net_9P_Base
      * Encodes an Rwalk 9P message
      *
      * @access  private
-     * @param   Array   $qids   An array of Net_9P_Qid objects
+     * @param   Array   $qids   An array of Net_9P_Base_Qid objects
      */
     private function encodeRwalk($qids)
     {
@@ -330,7 +330,7 @@ class Net_9P_Base
      * Encode a Stat 9P message
      *
      * @access  private
-     * @param   Array   $stats   An array of Net_9P_Stat objects
+     * @param   Array   $stats   An array of Net_9P_Base_Stat objects
      */
     private function encodeStat($stats)
     {
@@ -413,8 +413,8 @@ class Net_9P_Base
             $nIndex = $this->decodeString($value, $nIndex, 2);
             $muid = $this->buffer[-1];
 
-            $stats[] = new Net_9P_Stat($type, $dev, $qid, $mode, $atime, $mtime,
-                                       $len, $name, $uid, $gid, $muid);
+            $stats[] = new Net_9P_Base_Stat($type, $dev, $qid, $mode, $atime, $mtime,
+                                            $len, $name, $uid, $gid, $muid);
             
             array_splice($this->buffer, -12);
         }
